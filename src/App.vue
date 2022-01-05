@@ -1,55 +1,62 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      color="primary"
-      dark
-    >
-      <div class="d-flex align-center">
-        <v-img
-          alt="Vuetify Logo"
-          class="shrink mr-2"
-          contain
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-logo-dark.png"
-          transition="scale-transition"
-          width="40"
-        />
+    <v-navigation-drawer app permanent>
+      <v-list-item>
+        <v-list-item-content>
+          <v-list-item-title class="text-h6"> K2Ray </v-list-item-title>
+          <v-list-item-subtitle> A GUI for V2Ray. </v-list-item-subtitle>
+        </v-list-item-content>
+      </v-list-item>
 
-        <v-img
-          alt="Vuetify Name"
-          class="shrink mt-1 hidden-sm-and-down"
-          contain
-          min-width="100"
-          src="https://cdn.vuetifyjs.com/images/logos/vuetify-name-dark.png"
-          width="100"
-        />
-      </div>
+      <v-divider></v-divider>
 
-      <v-spacer></v-spacer>
-
-      <v-btn
-        href="https://github.com/vuetifyjs/vuetify/releases/latest"
-        target="_blank"
-        text
-      >
-        <span class="mr-2">Latest Release</span>
-        <v-icon>mdi-open-in-new</v-icon>
-      </v-btn>
-    </v-app-bar>
+      <v-list dense nav>
+        <v-list-item v-for="item in items" :key="item.title" :to="item.path">
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
 
     <v-main>
-      <router-view/>
+      <transition name="slide-fade" mode="out-in">
+        <router-view></router-view>
+      </transition>
     </v-main>
   </v-app>
 </template>
 
 <script>
-
 export default {
-  name: 'App',
+  name: "App",
 
   data: () => ({
-    //
+    items: [
+      { title: "控制台", path: "/" },
+      { title: "服务器", path: "/server" },
+      { title: "偏好", path: "/preference" },
+      { title: "路由", path: "/route" },
+      { title: "关于", path: "/about" },
+    ],
   }),
+
+  mounted: () => {
+    document.title = "K2Ray";
+  },
 };
 </script>
+
+<style scoped>
+.slide-fade-enter-active {
+  transition: all 0.2s ease;
+}
+.slide-fade-leave-active {
+  transition: all 0.4s cubic-bezier(1, 0.5, 0.8, 1);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active for below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
+</style>
