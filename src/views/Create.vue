@@ -37,14 +37,17 @@ export default {
     name: "",
     isSubcribe: false,
     subcribeURL: "",
-    data: "",
   }),
 
   methods: {
+    // button @click
     create() {
+      // check form rules
       if (!this.$refs.form.validate()) {
         return;
       }
+
+      // function to read, copy from Internet, do not edit
       let text = "";
       const relay = (res) => {
         const reader = res.body.getReader();
@@ -56,19 +59,46 @@ export default {
         };
         return reader.read().then(push);
       };
+
+      // execute
       fetch(this.subcribeURL)
         .then(relay)
-        .then((res) => window.api.send("msgbox", res))
+        .then((res) => {
+          let raw = Buffer.from(res, "base64").toString();
+          let servers = raw.split(/\s/);
+          let result = [];
+          for (let i = 0; i < servers.length; i++) {
+            if (servers[i].length === 0) {
+              continue;
+            }
+            if (!servers[i].startsWith("trojan://")) {
+              throw "不支持的协议" + servers[i];
+            }
+            let at = servers[i].indexOf("@");
+            let well = servers[i].indexOf("#");
+            if (at < 0 || well < 0) {
+              throw "不支持的协议" + servers[i];
+            }
+            result.push({
+              name: servers[i].substring(well + 1),
+              server: servers[i].substring(at + 1, well),
+              password: servers[i].substring(9, at),
+            });
+          }
+          console.log(result);
+        })
         .catch((reason) =>
-          window.api.send("msgbox", "无法获取订阅数据，请重试。")
+          window.api.send(
+            "msgbox",
+            "无法获取订阅数据，请重试。\n错误信息：" + reason
+          )
         );
-
-      console.log(this.data);
     },
     cancel() {
       this.$router.push("/server");
     },
 
+    // form rules
     required(value) {
       return !!value || "这是必填项。";
     },
