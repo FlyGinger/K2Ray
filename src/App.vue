@@ -34,7 +34,7 @@ export default {
   data: () => ({
     items: [
       { title: "控制台", path: "/" },
-      { title: "服务器", path: "/server" },
+      { title: "服务器", path: "/groups" },
       { title: "偏好", path: "/preference" },
       { title: "路由", path: "/route" },
       { title: "关于", path: "/about" },
@@ -49,10 +49,10 @@ export default {
 
 <style scoped>
 .slide-fade-enter-active {
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
 }
 .slide-fade-leave-active {
-  transition: all 0.4s cubic-bezier(1, 0.5, 0.8, 1);
+  transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
 }
 .slide-fade-enter, .slide-fade-leave-to
 /* .slide-fade-leave-active for below version 2.1.8 */ {

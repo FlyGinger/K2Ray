@@ -1,23 +1,24 @@
 <template>
   <v-list dense subheader two-line>
     <v-list-item-group>
-      <v-list-item v-for="(server, si) in group.servers" :key="si">
+      <v-list-item v-for="(server, si) in group.servers" :key="si" dense>
         <v-list-item-content>
           <v-list-item-title v-text="server.name"></v-list-item-title>
-          <v-list-item-subtitle v-text="server.server"></v-list-item-subtitle>
+          <v-list-item-subtitle v-text="server.address"></v-list-item-subtitle>
         </v-list-item-content>
         <v-list-item-action>
           <v-menu offset-y>
             <template v-slot:activator="{ on, attrs }">
               <v-btn icon v-bind="attrs" v-on="on">
-                <v-icon color="grey lighten-1">mdi-information</v-icon>
+                <v-icon color="secondary">mdi-information</v-icon>
               </v-btn>
             </template>
-            <v-list>
+            <v-list dense>
               <v-list-item
                 v-for="(action, ai) in actions"
                 :key="ai"
-                @click="clickServer(si, ai)"
+                @click="serverMenu(si, ai)"
+                dense
               >
                 <v-list-item-title>{{ action.name }}</v-list-item-title>
               </v-list-item>
@@ -31,28 +32,34 @@
 
 <script>
 export default {
-  name: "ServerGroup",
+  name: "Servers",
   props: {
     groupIndex: Number,
   },
 
   computed: {
     group() {
-      return this.$store.state.serverGroups[this.groupIndex];
+      return this.$store.state.groups[this.groupIndex];
     },
   },
 
   data: () => ({
     actions: [
-      { name: "复制服务器名称" },
-      { name: "复制服务器地址" },
-      { name: "复制密码" },
+      {
+        name: "复制 JSON",
+        action: (that, si) => {
+          window.api.send(
+            "write-clipboard",
+            JSON.stringify(that.group.servers[si])
+          );
+        },
+      },
     ],
   }),
 
   methods: {
-    clickServer(si, ai) {
-      console.log(si, this.actions[ai].name);
+    serverMenu(si, ai) {
+      this.actions[ai].action(this, si);
     },
   },
 };

@@ -26,6 +26,7 @@ async function createWindow() {
     }
   })
 
+  // copy from Internet, do not edit, XD
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     // Load the url of the dev server if in development mode
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
@@ -111,3 +112,7 @@ ipcMain.handle("load-all", async (event) => {
 })
 ipcMain.on("save-key-value", (event, key, value) => store.set(key, value))
 ipcMain.on("save-all", (event, config) => store.set(config))
+
+// clipboard
+import { clipboard } from "electron"
+ipcMain.on("write-clipboard", (event, value) => clipboard.writeText(value))
