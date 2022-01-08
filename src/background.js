@@ -1,10 +1,10 @@
 'use strict'
 
 import path from 'path'
-import { app, protocol, BrowserWindow, ipcMain, dialog } from 'electron'
+
+import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
-const isDevelopment = process.env.NODE_ENV !== 'production'
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -19,12 +19,10 @@ async function createWindow() {
     minWidth: 800,
     minHeight: 600,
     webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
-      nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: false, // is default value after Electron v5
+      contextIsolation: true, // protect against prototype pollution
+      enableRemoteModule: false, // turn off remote
+      preload: path.join(__static, "preload.js") // use a preload script
     }
   })
 
@@ -38,6 +36,7 @@ async function createWindow() {
     win.loadURL('app://./index.html')
   }
 
+  // bypass CORS
   win.webContents.session.webRequest.onBeforeSendHeaders(
     (details, callback) => {
       callback({ requestHeaders: { Origin: '*', ...details.requestHeaders } })
@@ -82,6 +81,7 @@ app.on('ready', async () => {
 })
 
 // Exit cleanly on request from parent process in development mode.
+const isDevelopment = process.env.NODE_ENV !== 'production'
 if (isDevelopment) {
   if (process.platform === 'win32') {
     process.on('message', (data) => {
@@ -96,4 +96,18 @@ if (isDevelopment) {
   }
 }
 
-ipcMain.on("msgbox", (event, args) => dialog.showMessageBox({ message: args }));
+// message box
+const { ipcMain, dialog } = require('electron')
+ipcMain.on("message-box", (event, args) => dialog.showMessageBox({ message: args }))
+
+// persistent config
+const Store = require('electron-store')
+const store = new Store()
+ipcMain.handle("load-all", async (event) => {
+  const result = await new Promise((resolve, reject) => {
+    resolve(store.get())
+  })
+  return result
+})
+ipcMain.on("save-key-value", (event, key, value) => store.set(key, value))
+ipcMain.on("save-all", (event, config) => store.set(config))
