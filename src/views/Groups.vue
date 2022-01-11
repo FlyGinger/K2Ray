@@ -23,7 +23,11 @@
             >更新订阅</v-btn
           >
         </v-col>
-        <v-col v-else class="pa-1" cols="auto">
+        <v-col
+          v-if="!isSubcribe() && groups.length > 0"
+          class="pa-1"
+          cols="auto"
+        >
           <v-btn small @click="addServer">添加服务器</v-btn>
         </v-col>
         <v-col><v-spacer></v-spacer></v-col>
