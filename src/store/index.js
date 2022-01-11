@@ -39,9 +39,13 @@ const store = new Vuex.Store({
 })
 
 // load config from file
+import defaultRoutingConfig from "../utils/defaultRoutingConfig.js"
 window.api.invoke("load-all").then((config) => {
   if (!("groups" in config)) {
     config.groups = []
+  }
+  if (!("routing" in config)) {
+    config.routing = defaultRoutingConfig
   }
   store.replaceState(config)
   window.api.send("save-all", store.state)

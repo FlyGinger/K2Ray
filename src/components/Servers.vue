@@ -4,7 +4,7 @@
       <v-card-text>一个服务器都没有。</v-card-text>
     </v-card>
 
-    <v-list v-else dense subheader two-line>
+    <v-list v-else dense two-line>
       <v-list-item-group>
         <v-list-item v-for="(server, si) in group.servers" :key="si" dense>
           <v-list-item-content>

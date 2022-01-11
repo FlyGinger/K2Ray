@@ -34,7 +34,7 @@ export default {
       { title: "控制台", path: "/" },
       { title: "服务器", path: "/groups" },
       { title: "偏好", path: "/preference" },
-      { title: "路由", path: "/route" },
+      { title: "路由", path: "/routing" },
       { title: "关于", path: "/about" },
     ],
   }),

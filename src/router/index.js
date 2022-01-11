@@ -6,7 +6,7 @@ import Groups from '../views/Groups.vue'
 import Group from '../views/Group.vue'
 import Server from '../views/Server.vue'
 import Preference from '../views/Preference.vue'
-import Route from '../views/Route.vue'
+import Routing from '../views/Routing.vue'
 import About from '../views/About.vue'
 
 Vue.use(VueRouter)
@@ -33,8 +33,8 @@ const routes = [
     component: Preference
   },
   {
-    path: '/route',
-    component: Route
+    path: '/routing',
+    component: Routing
   },
   {
     path: '/about',
