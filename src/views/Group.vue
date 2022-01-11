@@ -1,9 +1,26 @@
 <template>
-  <v-form class="ma-2" ref="form">
-    <v-container>
-      <v-row align="center">
+  <div>
+    <v-container class="ma-2">
+      <v-row>
         <v-col class="pa-1" cols="auto">
-          <v-btn small @click="create">创建</v-btn>
+          <v-btn
+            v-if="index === -1"
+            small
+            @click="create"
+            :loading="loading"
+            :disabled="loading"
+          >
+            创建
+          </v-btn>
+          <v-btn
+            v-else
+            small
+            @click="update"
+            :loading="loading"
+            :disabled="loading"
+          >
+            修改
+          </v-btn>
         </v-col>
         <v-col class="pa-1" cols="auto">
           <v-btn small @click="cancel">取消</v-btn>
@@ -11,142 +28,191 @@
         <v-col>
           <v-spacer></v-spacer>
         </v-col>
-        <v-col class="pa-1" cols="auto">
-          <v-chip
-            v-if="!isSubcribe"
-            small
-            @click="isSubcribe = !isSubcribe"
-            color="primary"
-          >
-            设置为订阅分组
-          </v-chip>
-          <v-chip
-            v-else
-            small
-            @click="isSubcribe = !isSubcribe"
-            color="primary"
-          >
-            取消设置为订阅分组
-          </v-chip>
-        </v-col>
       </v-row>
-      <v-row class="mt-10">
-        <v-text-field
-          label="分组名称"
-          :rules="[required]"
-          v-model="name"
-          outlined
-          clearable
-          dense
-        ></v-text-field>
-      </v-row>
-      <v-row v-if="isSubcribe">
-        <v-text-field
-          label="订阅地址"
-          :rules="[required, url]"
-          v-model="subcribeURL"
-          outlined
-          clearable
-          dense
-        ></v-text-field>
-      </v-row>
+
+      <v-form ref="form">
+        <v-row class="mt-8">
+          <v-col class="pa-1">
+            <v-text-field
+              label="分组名称"
+              class="mr-4"
+              :rules="[required]"
+              v-model="name"
+              outlined
+              clearable
+              dense
+            ></v-text-field>
+          </v-col>
+        </v-row>
+
+        <v-row>
+          <v-col class="pa-1">
+            <v-card class="mr-4" flat outlined>
+              <v-card-title>订阅</v-card-title>
+              <v-card-text>
+                <v-checkbox
+                  label="这是一个订阅分组"
+                  v-model="isSubcribe"
+                  dense
+                ></v-checkbox>
+                <v-text-field
+                  label="订阅地址"
+                  :rules="[isURL]"
+                  v-model="subcribeURL"
+                  :disabled="!isSubcribe"
+                  outlined
+                  clearable
+                  dense
+                ></v-text-field>
+              </v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+      </v-form>
     </v-container>
-  </v-form>
+    <v-snackbar v-model="snackbar" timeout="-1" color="error" outlined text>
+      <v-container>
+        <v-row align="center">
+          <v-col>{{ snackbarText }}</v-col>
+          <v-col cols="auto">
+            <v-btn @click="snackbar = false" icon>
+              <v-icon>mdi-close</v-icon>
+            </v-btn>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-snackbar>
+  </div>
 </template>
 
 <script>
+import getSubcribeData from "../utils/getSubcribeData.js";
+
 export default {
   data: () => ({
-    type: "",
+    // -1 for create new group
+    index: 0,
+    // reason button's loading state
+    // "create" in "create" mode, "update" in "update" mode
+    loading: false,
+    // snackbar configuration
+    snackbar: false,
+    snackbarText: "",
+
+    // form data
     name: "",
     isSubcribe: false,
     subcribeURL: "",
+
+    // used in ok()
+    oldSubcribeURL: "",
   }),
 
+  // setup the reason for entering this page
+  // TODO: in update mode, load data into form
   created() {
-    this.type = this.$route.params.type;
+    this.index = parseInt(this.$route.params.index);
+    if (this.index >= 0) {
+      this.name = this.$store.state.groups[this.index].name;
+      this.isSubcribe = this.$store.state.groups[this.index].isSubcribe;
+      this.subcribeURL = this.$store.state.groups[this.index].subcribeURL;
+      this.oldSubcribeURL = this.subcribeURL;
+    }
   },
 
   methods: {
-    // button @click
+    // @click for create button
+    // create new server group
     create() {
-      // check form rules
       if (!this.$refs.form.validate()) {
         return;
       }
+      this.loading = true;
 
-      // function to read, copy from Internet, do not edit, XD
-      let text = "";
-      const relay = (res) => {
-        const reader = res.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        const push = ({ value, done }) => {
-          if (done) return text;
-          text += decoder.decode(value, { stream: true });
-          return reader.read().then(push);
-        };
-        return reader.read().then(push);
+      // new server group
+      let group = {
+        name: this.name,
+        isSubcribe: this.isSubcribe,
+        subcribeURL: this.subcribeURL,
+        servers: [],
       };
 
-      // execute
-      fetch(this.subcribeURL)
-        .then(relay)
-        .then((res) => {
-          let raw = Buffer.from(res, "base64").toString().split(/\s/);
-          let result = [];
-          for (let i = 0; i < raw.length; i++) {
-            if (raw[i].length === 0) {
-              continue;
-            }
-            if (raw[i].startsWith("trojan://")) {
-              result.push(this.parseTrojan(raw[i]));
-            } else {
-              window.api.send("msgbox", "不支持的协议" + raw[i]);
-            }
-          }
-          console.log(result);
-        })
-        .catch((reason) =>
-          window.api.send(
-            "msgbox",
-            "无法获取订阅数据，请重试。\n错误信息：" + reason
-          )
-        );
+      if (!this.isSubcribe) {
+        group.subcribeURL = ""; // clear subcribeURL
+        this.$store.commit("addGroup", group);
+        this.loading = false;
+        this.$router.push("/groups");
+      } else {
+        getSubcribeData(this.subcribeURL)
+          .then((servers) => {
+            group.servers = servers;
+            this.$store.commit("addGroup", group);
+            this.loading = false;
+            this.$router.push("/groups");
+          })
+          .catch((reason) => {
+            this.loading = false;
+            this.snackbarText = "无法获取订阅数据，请重试。\n" + reason.message;
+            this.snackbar = true;
+          });
+      }
     },
+
+    // @click for update button
+    // update old server group
+    update() {
+      if (!this.$refs.form.validate()) {
+        return;
+      }
+      this.loading = true;
+
+      // new server group
+      let group = {
+        name: this.name,
+        isSubcribe: this.isSubcribe,
+        subcribeURL: this.subcribeURL,
+        servers: this.$store.state.groups[this.index].servers,
+      };
+
+      if (!this.isSubcribe || this.oldSubcribeURL === this.subcribeURL) {
+        group.subcribeURL = ""; // clear subcribeURL
+        this.$store.commit("setGroup", { index: this.index, group: group });
+        this.loading = false;
+        this.$router.push("/groups");
+      } else {
+        getSubcribeData(this.subcribeURL)
+          .then((servers) => {
+            group.servers = servers;
+            this.$store.commit("setGroup", { index: this.index, group: group });
+            this.loading = false;
+            this.$router.push("/groups");
+          })
+          .catch((reason) => {
+            this.loading = false;
+            this.snackbarText = "无法获取订阅数据，请重试。\n" + reason.message;
+            this.snackbar = true;
+          });
+      }
+    },
+
+    // @click for cancel button
     cancel() {
       this.$router.push("/groups");
     },
 
-    // form rules
+    // form validator
     required(value) {
       return !!value || "这是必填项。";
     },
-    url(value) {
+
+    // form validator
+    isURL(value) {
       return (
         !this.isSubcribe ||
+        this.required(value) ||
         /https?:\/\/.+/.test(value) ||
         "必须是 http:// 或者 https:// 开头的 URL 。"
       );
-    },
-
-    // parse URL
-    parseTrojan(raw) {
-      let at = raw.indexOf("@");
-      let well = raw.indexOf("#");
-      if (at < 0 || well < 0) {
-        throw "不支持的协议" + raw;
-      }
-      let colon = raw.indexOf(":", at);
-      if (colon < 0) {
-        throw "不支持的协议" + raw;
-      }
-
-      return {
-        name: raw.substring(well + 1),
-        address: raw.substring(at + 1, colon),
-        port: parseInt(raw.substring(colon + 1, well)),
-        password: raw.substring(9, at),
-      };
     },
   },
 };

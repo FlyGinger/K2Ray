@@ -6,8 +6,7 @@ contextBridge.exposeInMainWorld("api", {
     send: (channel, data) => {
         // whitelist channels
         let validChannels = [
-            "message-box", // message box
-            "save-key-value", "save-all", // persistent config
+            "save-all", // persistent config
             "write-clipboard", // clipboard
         ];
         if (validChannels.includes(channel)) {

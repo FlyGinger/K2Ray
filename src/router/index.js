@@ -20,7 +20,7 @@ const routes = [
     component: Groups
   },
   {
-    path: '/group',
+    path: '/group/:index',
     component: Group
   },
   {

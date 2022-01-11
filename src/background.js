@@ -98,8 +98,7 @@ if (isDevelopment) {
 }
 
 // message box
-const { ipcMain, dialog } = require('electron')
-ipcMain.on("message-box", (event, args) => dialog.showMessageBox({ message: args }))
+const { ipcMain } = require('electron')
 
 // persistent config
 const Store = require('electron-store')
@@ -110,7 +109,6 @@ ipcMain.handle("load-all", async (event) => {
   })
   return result
 })
-ipcMain.on("save-key-value", (event, key, value) => store.set(key, value))
 ipcMain.on("save-all", (event, config) => store.set(config))
 
 // clipboard
