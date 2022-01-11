@@ -23,6 +23,9 @@
             >更新订阅</v-btn
           >
         </v-col>
+        <v-col v-else class="pa-1" cols="auto">
+          <v-btn small @click="addServer">添加服务器</v-btn>
+        </v-col>
         <v-col><v-spacer></v-spacer></v-col>
       </v-row>
 
@@ -36,7 +39,7 @@
             </v-tabs>
             <v-tabs-items v-model="tab">
               <v-tab-item v-for="(group, gi) in groups" :key="gi">
-                <Servers :group="group"></Servers>
+                <Servers :groupIndex="gi"></Servers>
               </v-tab-item>
             </v-tabs-items>
           </v-card>
@@ -132,6 +135,11 @@ export default {
             "无法获取订阅数据，请重试。\n" + reason.message;
           this.failSnackbar = true;
         });
+    },
+
+    // @click for adding new server button
+    addServer() {
+      this.$router.push("/server/" + this.tab.toString() + "/-1");
     },
 
     // return if current group is a subcribe

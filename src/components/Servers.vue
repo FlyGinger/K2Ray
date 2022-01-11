@@ -42,11 +42,25 @@
 export default {
   name: "Servers",
   props: {
-    group: Object,
+    groupIndex: Number,
+  },
+
+  computed: {
+    group() {
+      return this.$store.state.groups[this.groupIndex];
+    },
   },
 
   data: () => ({
     actions: [
+      {
+        name: "修改",
+        action: (that, si) => {
+          that.$router.push(
+            "/server/" + that.groupIndex.toString() + "/" + si.toString()
+          );
+        },
+      },
       {
         name: "复制 JSON",
         action: (that, si) => {

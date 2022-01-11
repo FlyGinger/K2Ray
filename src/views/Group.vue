@@ -108,8 +108,7 @@ export default {
     oldSubcribeURL: "",
   }),
 
-  // setup the reason for entering this page
-  // TODO: in update mode, load data into form
+  // prepare for later operation
   created() {
     this.index = parseInt(this.$route.params.index);
     if (this.index >= 0) {
