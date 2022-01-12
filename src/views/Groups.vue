@@ -35,7 +35,7 @@
 
       <v-row>
         <v-col class="pa-1">
-          <v-card v-if="groups.length > 0" class="mr-4 mt-2" flat tile outlined>
+          <v-card v-if="groups.length > 0" class="mr-4 mt-2" flat outlined>
             <v-tabs v-model="tab" show-arrows outlined>
               <v-tab v-for="(group, gi) in groups" :key="gi">
                 {{ group.name }}
@@ -48,7 +48,7 @@
             </v-tabs-items>
           </v-card>
 
-          <v-card v-else class="mr-4 mt-2" flat tile outlined>
+          <v-card v-else class="mr-4 mt-2" flat outlined>
             <v-card-text>一个分组都没有。</v-card-text>
           </v-card>
         </v-col>
@@ -58,12 +58,20 @@
       v-model="successSnackbar"
       timeout="2000"
       color="success"
+      elevation="12"
       outlined
       text
     >
       {{ successSnackbarText }}
     </v-snackbar>
-    <v-snackbar v-model="failSnackbar" timeout="-1" color="error" outlined text>
+    <v-snackbar
+      v-model="failSnackbar"
+      timeout="-1"
+      color="error"
+      elevation="12"
+      outlined
+      text
+    >
       <v-container>
         <v-row align="center">
           <v-col>{{ failSnackbarText }}</v-col>

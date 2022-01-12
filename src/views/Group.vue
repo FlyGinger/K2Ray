@@ -70,7 +70,14 @@
         </v-row>
       </v-form>
     </v-container>
-    <v-snackbar v-model="snackbar" timeout="-1" color="error" outlined text>
+    <v-snackbar
+      v-model="snackbar"
+      timeout="-1"
+      color="error"
+      elevation="12"
+      outlined
+      text
+    >
       <v-container>
         <v-row align="center">
           <v-col>{{ snackbarText }}</v-col>

@@ -1,6 +1,6 @@
 'use strict'
 
-import path from 'path'
+import path, { resolve } from 'path'
 
 import { app, protocol, BrowserWindow } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -114,3 +114,21 @@ ipcMain.on("save-all", (event, config) => store.set(config))
 // clipboard
 import { clipboard } from "electron"
 ipcMain.on("write-clipboard", (event, value) => clipboard.writeText(value))
+
+// V2Ray path
+import { dialog } from 'electron'
+ipcMain.handle("get-path", async (event) => {
+  return dialog.showOpenDialog({
+    title: "选择 V2Ray 核心所在目录",
+    properties: ["openDirectory", "createDirectory"]
+  })
+})
+
+// V2Ray
+import getCert from './utils/getCert'
+ipcMain.handle("get-cert", async (event, v2rayPath) => {
+  const result = await new Promise((resolve, reject) => {
+    resolve(getCert(v2rayPath))
+  })
+  return result
+})

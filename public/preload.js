@@ -14,7 +14,11 @@ contextBridge.exposeInMainWorld("api", {
         }
     },
     invoke: (channel, func) => {
-        let validChannels = ["load-all"]; // persistent config
+        let validChannels = [
+            "load-all", // persistent config
+            "get-path", // get V2Ray path
+            "get-cert",
+        ];
         if (validChannels.includes(channel)) {
             return ipcRenderer.invoke(channel, func);
         }

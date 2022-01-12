@@ -10,7 +10,7 @@
 
       <v-row>
         <v-col class="pa-1">
-          <v-card class="mr-4 mt-2" flat tile outlined>
+          <v-card class="mr-4 mt-2" flat outlined>
             <v-tabs v-model="tab" outlined>
               <v-tab v-for="(outbound, oi) in outbounds" :key="oi">
                 {{ outbound }}
