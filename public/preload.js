@@ -8,6 +8,9 @@ contextBridge.exposeInMainWorld("api", {
         let validChannels = [
             "save-all", // persistent config
             "write-clipboard", // clipboard
+            "launch", "close", "relaunch", // v2ray
+            "set-proxy", "unset-proxy", // system proxy
+            "open-access", "open-error", // v2ray log
         ];
         if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data);
@@ -17,10 +20,15 @@ contextBridge.exposeInMainWorld("api", {
         let validChannels = [
             "load-all", // persistent config
             "get-path", // get V2Ray path
-            "get-cert",
         ];
         if (validChannels.includes(channel)) {
             return ipcRenderer.invoke(channel, func);
         }
-    }
+    },
+    // receive: (channel, func) => {
+    //     let validChannels = [];
+    //     if (validChannels.includes(channel)) {
+    //         ipcRenderer.on(channel, (event, ...args) => func(...args));
+    //     }
+    // }
 });

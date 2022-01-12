@@ -54,6 +54,15 @@ export default {
   data: () => ({
     actions: [
       {
+        name: "使用该服务器",
+        action: (that, si) => {
+          that.$store.commit("setGroupServer", {
+            groupIndex: that.groupIndex,
+            serverIndex: si,
+          });
+        },
+      },
+      {
         name: "修改",
         action: (that, si) => {
           that.$router.push(

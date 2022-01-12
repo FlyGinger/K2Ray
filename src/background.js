@@ -1,19 +1,24 @@
 'use strict'
 
-import path, { resolve } from 'path'
+import path from 'path'
+const { execSync, spawn } = require('child_process')
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, clipboard, dialog, shell } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
+const Store = require('electron-store')
+
+import v2rayConfigGenerate from "./utils/v2rayConfigGenerate.js";
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } }
 ])
 
+let win
 async function createWindow() {
   // Create the browser window.
-  const win = new BrowserWindow({
+  win = new BrowserWindow({
     width: 800,
     height: 600,
     minWidth: 800,
@@ -81,6 +86,101 @@ app.on('ready', async () => {
   createWindow()
 })
 
+// persistent config
+const store = new Store()
+ipcMain.handle("load-all", async (event) => {
+  const result = await new Promise((resolve, reject) => {
+    resolve(store.get())
+  })
+  return result
+})
+ipcMain.on("save-all", (event, config) => store.set(config))
+
+// clipboard
+ipcMain.on("write-clipboard", (event, value) => clipboard.writeText(value))
+
+// V2Ray path
+ipcMain.handle("get-path", async (event) => {
+  return dialog.showOpenDialog({
+    title: "选择 V2Ray 核心所在目录",
+    properties: ["openDirectory", "createDirectory"]
+  })
+})
+
+// V2Ray
+let v2rayProcess
+function launch(state) {
+  let config = v2rayConfigGenerate(state)
+  let storeV2ray = new Store({ name: "v2ray" })
+  storeV2ray.set(config)
+  v2rayProcess = spawn(path.join(state.k2ray.core.v2rayPath, "v2ray"), ["-config", storeV2ray.path])
+  // let decoder = new TextDecoder()
+  // v2rayProcess.stdout.on('data', (data) => {
+  //   win.webContents.send("log", decoder.decode(data))
+  // })
+}
+function close() {
+  if (v2rayProcess) {
+    while (!v2rayProcess.kill()) { }
+  }
+  v2rayProcess = undefined
+}
+ipcMain.on("launch", (event, state) => {
+  launch(state)
+})
+ipcMain.on("close", (event) => {
+  close()
+})
+ipcMain.on("relaunch", (event, state) => {
+  close()
+  launch(state)
+})
+
+// system proxy
+function getAllNetworkServices(params) {
+  let raw = execSync("networksetup -listnetworkserviceorder", {})
+  let str = new TextDecoder().decode(raw);
+  let regexp = /\(\d+\)\s+.*/g
+  let services = [...str.matchAll(regexp)]
+  for (let i in services) {
+    let j = services[i][0].indexOf(")")
+    dialog.showMessageBox({ message: services[i][0] })
+    services[i] = services[i][0].substring(j + 1).trim()
+  }
+  return services
+}
+ipcMain.on("set-proxy", (event, ports) => {
+  let services = getAllNetworkServices()
+  services.forEach((service) => {
+    try {
+      execSync("networksetup -setwebproxy " + service + " 127.0.0.1 " + ports.http.toString(), {})
+      execSync("networksetup -setsecurewebproxy " + service + " 127.0.0.1 " + ports.http.toString(), {})
+      execSync("networksetup -setsocksfirewallproxy " + service + " 127.0.0.1 " + ports.socks.toString(), {})
+    } catch (e) {
+    }
+  })
+})
+ipcMain.on("unset-proxy", (event) => {
+  let services = getAllNetworkServices()
+  services.forEach((service) => {
+    try {
+      execSync("networksetup -setwebproxystate " + service + " off", {})
+      execSync("networksetup -setsecurewebproxystate " + service + " off", {})
+      execSync("networksetup -setsocksfirewallproxystate " + service + " off", {})
+    } catch (e) {
+    }
+  })
+})
+
+// v2ray log
+ipcMain.on("open-access", (event, v2rayPath) => {
+  let p = path.join(v2rayPath, "access.log")
+  shell.openPath(p)
+})
+ipcMain.on("open-error", (event, v2rayPath) => {
+  shell.openPath(path.join(v2rayPath, "error.log"))
+})
+
 // Exit cleanly on request from parent process in development mode.
 const isDevelopment = process.env.NODE_ENV !== 'production'
 if (isDevelopment) {
@@ -92,43 +192,8 @@ if (isDevelopment) {
     })
   } else {
     process.on('SIGTERM', () => {
+      close()
       app.quit()
     })
   }
 }
-
-// message box
-const { ipcMain } = require('electron')
-
-// persistent config
-const Store = require('electron-store')
-const store = new Store()
-ipcMain.handle("load-all", async (event) => {
-  const result = await new Promise((resolve, reject) => {
-    resolve(store.get())
-  })
-  return result
-})
-ipcMain.on("save-all", (event, config) => store.set(config))
-
-// clipboard
-import { clipboard } from "electron"
-ipcMain.on("write-clipboard", (event, value) => clipboard.writeText(value))
-
-// V2Ray path
-import { dialog } from 'electron'
-ipcMain.handle("get-path", async (event) => {
-  return dialog.showOpenDialog({
-    title: "选择 V2Ray 核心所在目录",
-    properties: ["openDirectory", "createDirectory"]
-  })
-})
-
-// V2Ray
-import getCert from './utils/getCert'
-ipcMain.handle("get-cert", async (event, v2rayPath) => {
-  const result = await new Promise((resolve, reject) => {
-    resolve(getCert(v2rayPath))
-  })
-  return result
-})
