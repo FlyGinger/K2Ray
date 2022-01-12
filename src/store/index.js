@@ -19,6 +19,7 @@ const store = new Vuex.Store({
       state.groups.splice(index, 1)
       window.api.send("save-all", state)
     },
+
     addServer(state, payload) {
       state.groups[payload.groupIndex].servers.push(payload.server)
       window.api.send("save-all", state)
@@ -31,6 +32,19 @@ const store = new Vuex.Store({
       state.groups[payload.groupIndex].servers.splice(payload.index, 1)
       window.api.send("save-all", state)
     },
+
+    addRule(state, payload) {
+      state.routing[payload.outbound].push(payload.rule)
+      window.api.send("save-all", state)
+    },
+    setRule(state, payload) {
+      state.routing[payload.outbound][payload.index] = payload.rule
+      window.api.send("save-all", state)
+    },
+    rmRule(state, payload) {
+      state.routing[payload.outbound].splice(payload.index, 1)
+      window.api.send("save-all", state)
+    }
   },
   actions: {
   },

@@ -18,26 +18,7 @@
             </v-tabs>
             <v-tabs-items v-model="tab">
               <v-tab-item v-for="(outbound, oi) in outbounds" :key="oi">
-                <v-card v-if="routing[outbound].length === 0" flat>
-                  <v-card-text>什么规则都没有。</v-card-text>
-                </v-card>
-
-                <v-list v-else dense>
-                  <v-list-item-group>
-                    <v-list-item
-                      v-for="(rule, ri) in routing[outbound]"
-                      :key="ri"
-                      dense
-                    >
-                      <v-list-item-content>
-                        <RoutingRule
-                          :outbound="outbound"
-                          :ruleIndex="ri"
-                        ></RoutingRule>
-                      </v-list-item-content>
-                    </v-list-item>
-                  </v-list-item-group>
-                </v-list>
+                <RoutingRules :outbound="outbound"></RoutingRules>
               </v-tab-item>
             </v-tabs-items>
           </v-card>
@@ -56,7 +37,7 @@
                   label="类型"
                   :rules="[required]"
                   :items="items"
-                  :value="type"
+                  v-model="type"
                   dense
                   outlined
                 ></v-select>
@@ -83,12 +64,12 @@
 </template>
 
 <script>
-import RoutingRule from "@/components/RoutingRule.vue";
+import RoutingRules from "@/components/RoutingRules.vue";
 import routingType from "../utils/routingType.js";
 
 export default {
   components: {
-    RoutingRule,
+    RoutingRules,
   },
 
   created() {
@@ -118,11 +99,17 @@ export default {
   methods: {
     // @click for create button
     create() {
+      this.type = "";
+      this.value = "";
       this.dialog = true;
     },
 
     // @click for create button in dialog
     dialogCreate() {
+      this.$store.commit("addRule", {
+        outbound: this.outbounds[this.tab],
+        rule: { type: this.type, value: this.value },
+      });
       this.dialog = false;
     },
 
