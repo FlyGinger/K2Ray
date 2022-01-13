@@ -110,7 +110,7 @@ function launch(state) {
   let config = v2rayConfigGenerate(state)
   let storeV2ray = new Store({ name: "v2ray" })
   storeV2ray.set(config)
-  v2rayProcess = spawn(path.join(state.k2ray.core.v2rayPath, "v2ray"), ["-config", storeV2ray.path])
+  v2rayProcess = spawn(path.join(state.k2ray.v2rayPath, "v2ray"), ["-config", storeV2ray.path])
   // let decoder = new TextDecoder()
   // v2rayProcess.stdout.on('data', (data) => {
   //   win.webContents.send("log", decoder.decode(data))

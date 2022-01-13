@@ -57,7 +57,7 @@
         <v-col class="pa-1">
           <v-card v-if="selected" class="mr-4 mt-2" flat outlined>
             <v-card-title>正在使用</v-card-title>
-            <v-card-subtitle>{{ serverName() }}</v-card-subtitle>
+            <v-card-subtitle>{{ serverName }}</v-card-subtitle>
           </v-card>
           <v-card v-else class="mr-4 mt-2" flat outlined>
             <v-card-title>没有选择服务器。</v-card-title>
@@ -108,44 +108,27 @@ export default {
   }),
 
   computed: {
-    si() {
-      return this.$store.state.k2ray.core.groupIndex;
-    },
-
-    gi() {
-      return this.$store.state.k2ray.core.serverIndex;
-    },
-
     v2rayOn() {
       return this.$store.state.v2rayOn;
+    },
+
+    selected() {
+      return !!this.$store.state.k2ray.serverInUse.name;
+    },
+
+    serverName() {
+      if (this.$store.state.k2ray.serverInUse.name) {
+        return this.$store.state.k2ray.serverInUse.name
+      }
+      return ""
     },
   },
 
   methods: {
-    test() {
-      console.log(this.v2rayOn);
-    },
-
-    selected() {
-      return !(
-        this.gi < 0 ||
-        this.gi >= this.$store.state.groups.length ||
-        this.si < 0 ||
-        this.si >= this.$store.state.groups[this.gi].servers.length
-      );
-    },
-
-    serverName() {
-      if (!this.selected()) {
-        return "";
-      }
-      return this.$store.state.groups[this.gi].servers[this.si].name;
-    },
-
     setSystemProxy() {
       window.api.send("set-proxy", {
-        socks: this.$store.state.k2ray.inbound.socks,
-        http: this.$store.state.k2ray.inbound.http,
+        socks: this.$store.state.k2ray.socks,
+        http: this.$store.state.k2ray.http,
       });
       this.successSnackbarText = "已设置！";
       this.successSnackbar = true;
@@ -176,11 +159,11 @@ export default {
     },
 
     openAccess() {
-      window.api.send("open-access", this.$store.state.k2ray.core.v2rayPath);
+      window.api.send("open-access", this.$store.state.k2ray.v2rayPath);
     },
 
     openError() {
-      window.api.send("open-error", this.$store.state.k2ray.core.v2rayPath);
+      window.api.send("open-error", this.$store.state.k2ray.v2rayPath);
     },
   },
 };

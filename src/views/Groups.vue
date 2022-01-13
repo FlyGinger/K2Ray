@@ -128,6 +128,9 @@ export default {
     // @click for delete button
     remove() {
       this.$store.commit("rmGroup", this.tab);
+      // force refresh
+      this.tab--;
+      this.tab++;
     },
 
     // @click for subcribe update button

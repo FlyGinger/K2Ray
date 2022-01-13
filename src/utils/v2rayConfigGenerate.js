@@ -2,26 +2,26 @@ import path from 'path'
 const { execSync } = require('child_process')
 
 function v2rayConfigGenerate(state) {
-  let certRaw = execSync(path.join(state.k2ray.core.v2rayPath, "v2ctl") + " cert", {})
-  let certStr = new TextDecoder().decode(certRaw);
+  let certRaw = execSync(path.join(state.k2ray.v2rayPath, "v2ctl") + " cert", {})
+  let certStr = new TextDecoder().decode(certRaw)
   let cert = JSON.parse(certStr)
 
-  let server = state.groups[state.k2ray.core.groupIndex].servers[state.k2ray.core.serverIndex]
+  let server = state.k2ray.serverInUse
   let config = {
     log: {
-      access: path.join(state.k2ray.core.v2rayPath, "access.log"),
-      error: path.join(state.k2ray.core.v2rayPath, "error.log"),
+      access: path.join(state.k2ray.v2rayPath, "access.log"),
+      error: path.join(state.k2ray.v2rayPath, "error.log"),
       logLevel: "warning"
     },
     inbounds: [
       {
-        port: state.k2ray.inbound.socks,
+        port: state.k2ray.socks,
         listen: "127.0.0.1",
         protocol: "socks",
         settings: { udp: true, auth: "noauth" }
       },
       {
-        port: state.k2ray.inbound.http,
+        port: state.k2ray.http,
         listen: "127.0.0.1",
         protocol: "http"
       }

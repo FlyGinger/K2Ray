@@ -56,10 +56,7 @@ export default {
       {
         name: "使用该服务器",
         action: (that, si) => {
-          that.$store.commit("setGroupServer", {
-            groupIndex: that.groupIndex,
-            serverIndex: si,
-          });
+          that.$store.commit("setServerInUse", that.group.servers[si]);
         },
       },
       {

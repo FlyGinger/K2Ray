@@ -13,7 +13,7 @@ function save(state) {
 
 const store = new Vuex.Store({
   state: {
-    v2rayOn: false
+    v2rayOn: false,
   },
   mutations: {
     // reset
@@ -72,26 +72,25 @@ const store = new Vuex.Store({
 
     // preference
     setAutoStart(state, autoStart) {
-      state.k2ray.core.autoStart = autoStart
+      state.k2ray.autoStart = autoStart
       save(state)
     },
     setV2RayPath(state, v2rayPath) {
-      state.k2ray.core.v2rayPath = v2rayPath
+      state.k2ray.v2rayPath = v2rayPath
       save(state)
     },
     setSocksPort(state, port) {
-      state.k2ray.inbound.socks = port
+      state.k2ray.socks = port
       save(state)
     },
     setHTTPPort(state, port) {
-      state.k2ray.inbound.http = port
+      state.k2ray.http = port
       save(state)
     },
-    setGroupServer(state, payload) {
-      state.k2ray.core.groupIndex = payload.groupIndex
-      state.k2ray.core.serverIndex = payload.serverIndex
+    setServerInUse(state, server) {
+      state.k2ray.serverInUse = server
       save(state)
-    }
+    },
   },
   actions: {
   },

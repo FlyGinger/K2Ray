@@ -108,10 +108,10 @@
 <script>
 export default {
   created() {
-    this.autoStart = this.$store.state.k2ray.core.autoStart;
-    this.v2rayPath = this.$store.state.k2ray.core.v2rayPath;
-    this.socksPort = this.$store.state.k2ray.inbound.socks;
-    this.httpPort = this.$store.state.k2ray.inbound.http;
+    this.autoStart = this.$store.state.k2ray.autoStart;
+    this.v2rayPath = this.$store.state.k2ray.v2rayPath;
+    this.socksPort = this.$store.state.k2ray.socks;
+    this.httpPort = this.$store.state.k2ray.http;
   },
 
   data: () => ({

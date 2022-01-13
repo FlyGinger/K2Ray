@@ -29,9 +29,7 @@ window.api.invoke("load-all").then((config) => {
     k2ray: store.state.k2ray,
   })
 
-  let gi = store.state.k2ray.core.groupIndex
-  let si = store.state.k2ray.core.serverIndex
-  if (gi >= 0 && gi < store.state.groups.length && si >= 0 || si < store.state.groups[gi].servers.length) {
+  if (store.state.k2ray.serverInUse.name) {
     window.api.send("launch", store.state)
   }
 }).then(() => {
