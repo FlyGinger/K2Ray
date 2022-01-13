@@ -29,7 +29,7 @@ window.api.invoke("load-all").then((config) => {
     k2ray: store.state.k2ray,
   })
 
-  if (store.state.k2ray.serverInUse.name) {
+  if (store.state.k2ray.v2rayPath && store.state.k2ray.serverInUse.name) {
     window.api.send("launch", store.state)
   }
 }).then(() => {
