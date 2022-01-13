@@ -7,12 +7,13 @@ function save(state) {
   window.api.send("save-all", {
     groups: state.groups,
     routing: state.routing,
-    k2ray: state.k2ray,
+    k2ray: state.k2ray
   })
 }
 
 const store = new Vuex.Store({
   state: {
+    v2rayOn: false
   },
   mutations: {
     // reset
@@ -20,6 +21,11 @@ const store = new Vuex.Store({
       state.groups = config.groups
       state.routing = config.routing
       state.k2ray = config.k2ray
+    },
+
+    // v2ray state
+    setV2RayOn(state, v2rayOn) {
+      state.v2rayOn = v2rayOn
     },
 
     // group
@@ -91,6 +97,10 @@ const store = new Vuex.Store({
   },
   modules: {
   }
+})
+
+window.api.receive("v2rayState", (v2rayOn) => {
+  store.commit("setV2RayOn", v2rayOn)
 })
 
 export default store

@@ -105,8 +105,6 @@ export default {
     successSnackbar: false,
     successSnackbarText: "",
     failSnackbar: false,
-
-    v2rayOn: false,
   }),
 
   computed: {
@@ -117,9 +115,17 @@ export default {
     gi() {
       return this.$store.state.k2ray.core.serverIndex;
     },
+
+    v2rayOn() {
+      return this.$store.state.v2rayOn;
+    },
   },
 
   methods: {
+    test() {
+      console.log(this.v2rayOn);
+    },
+
     selected() {
       return !(
         this.gi < 0 ||
@@ -155,21 +161,18 @@ export default {
       window.api.send("launch", this.$store.state);
       this.successSnackbarText = "已启动！";
       this.successSnackbar = true;
-      this.v2rayOn = true
     },
 
     close() {
       window.api.send("close");
       this.successSnackbarText = "已关闭！";
       this.successSnackbar = true;
-      this.v2rayOn = false
     },
 
     relaunch() {
       window.api.send("relaunch", this.$store.state);
       this.successSnackbarText = "已重启！";
       this.successSnackbar = true;
-      this.v2rayOn = true
     },
 
     openAccess() {

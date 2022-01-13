@@ -28,6 +28,12 @@ window.api.invoke("load-all").then((config) => {
     routing: store.state.routing,
     k2ray: store.state.k2ray,
   })
+
+  let gi = store.state.k2ray.core.groupIndex
+  let si = store.state.k2ray.core.serverIndex
+  if (gi >= 0 && gi < store.state.groups.length && si >= 0 || si < store.state.groups[gi].servers.length) {
+    window.api.send("launch", store.state)
+  }
 }).then(() => {
   new Vue({
     router,

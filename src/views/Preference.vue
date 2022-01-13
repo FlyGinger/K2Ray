@@ -130,6 +130,7 @@ export default {
   methods: {
     updateAutoStart() {
       this.$store.commit("setAutoStart", this.autoStart);
+      window.api.send("set-login-item", this.autoStart);
     },
 
     updateV2RayPath() {

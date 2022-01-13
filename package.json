@@ -1,6 +1,8 @@
 {
   "name": "k2ray",
+  "description": "A GUI for V2Ray.",
   "version": "0.1.0",
+  "author": "zenk",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,9 +11,11 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
-    "postuninstall": "electron-builder install-app-deps"
+    "postuninstall": "electron-builder install-app-deps",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
   },
-  "main": "background.js",
+  "main": "src/background.js",
   "dependencies": {
     "@mdi/font": "5.9.55",
     "roboto-fontface": "*",
@@ -26,6 +30,7 @@
     "@vue/cli-plugin-vuex": "~4.5.0",
     "@vue/cli-service": "~4.5.0",
     "electron": "^13.0.0",
+    "electron-builder": "^22.14.5",
     "electron-devtools-installer": "^3.1.0",
     "electron-store": "^8.0.1",
     "eslint": "^6.7.2",
@@ -55,5 +60,16 @@
     "> 1%",
     "last 2 versions",
     "not dead"
-  ]
+  ],
+  "build": {
+    "appId": "zenk.k2ray",
+    "productName": "K2Ray",
+    "mac": {
+      "icon": "public/icon_512x512.icns",
+      "type": "distribution",
+      "target": [
+        "dmg"
+      ]
+    }
+  }
 }

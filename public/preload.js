@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("api", {
             "launch", "close", "relaunch", // v2ray
             "set-proxy", "unset-proxy", // system proxy
             "open-access", "open-error", // v2ray log
+            "set-login-item", // start at login
         ];
         if (validChannels.includes(channel)) {
             ipcRenderer.send(channel, data);
@@ -25,10 +26,10 @@ contextBridge.exposeInMainWorld("api", {
             return ipcRenderer.invoke(channel, func);
         }
     },
-    // receive: (channel, func) => {
-    //     let validChannels = [];
-    //     if (validChannels.includes(channel)) {
-    //         ipcRenderer.on(channel, (event, ...args) => func(...args));
-    //     }
-    // }
+    receive: (channel, func) => {
+        let validChannels = ["v2rayState"];
+        if (validChannels.includes(channel)) {
+            ipcRenderer.on(channel, (event, ...args) => func(...args));
+        }
+    }
 });

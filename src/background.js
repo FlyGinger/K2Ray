@@ -3,7 +3,7 @@
 import path from 'path'
 const { execSync, spawn } = require('child_process')
 
-import { app, protocol, BrowserWindow, ipcMain, clipboard, dialog, shell } from 'electron'
+import { app, protocol, BrowserWindow, ipcMain, clipboard, dialog, shell, Tray, Menu } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const Store = require('electron-store')
@@ -54,6 +54,15 @@ async function createWindow() {
         responseHeaders: { 'Access-Control-Allow-Origin': ['*'], ...details.responseHeaders },
       })
     });
+
+  win.on("close", (event) => {
+    event.preventDefault()
+    win.hide()
+  })
+}
+
+if (process.platform === 'darwin') {
+  app.dock.setIcon(path.join(__static, "icon.iconset/icon_512x512.png"))
 }
 
 // Quit when all windows are closed.
@@ -62,28 +71,17 @@ app.on('window-all-closed', () => {
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     app.quit()
+  } else {
+    app.dock.hide()
   }
 })
 
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow()
-})
-
-// This method will be called when Electron has finished
-// initialization and is ready to create browser windows.
-// Some APIs can only be used after this event occurs.
-app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS)
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString())
-    }
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow()
   }
-  createWindow()
 })
 
 // persistent config
@@ -127,13 +125,16 @@ function close() {
 }
 ipcMain.on("launch", (event, state) => {
   launch(state)
+  win.webContents.send("v2rayState", true)
 })
 ipcMain.on("close", (event) => {
   close()
+  win.webContents.send("v2rayState", false)
 })
 ipcMain.on("relaunch", (event, state) => {
   close()
   launch(state)
+  win.webContents.send("v2rayState", true)
 })
 
 // system proxy
@@ -174,11 +175,25 @@ ipcMain.on("unset-proxy", (event) => {
 
 // v2ray log
 ipcMain.on("open-access", (event, v2rayPath) => {
-  let p = path.join(v2rayPath, "access.log")
-  shell.openPath(p)
+  shell.openPath(path.join(v2rayPath, "access.log"))
 })
 ipcMain.on("open-error", (event, v2rayPath) => {
   shell.openPath(path.join(v2rayPath, "error.log"))
+})
+
+// start at login
+ipcMain.on("set-logtin-item", (event, autoStart) => {
+  if (autoStart) {
+    app.setLoginItemSettings({
+      openAtLogin: true,
+      openAsHidden: true,
+    })
+  } else {
+    app.setLoginItemSettings({
+      openAtLogin: false,
+      openAsHidden: false,
+    })
+  }
 })
 
 // Exit cleanly on request from parent process in development mode.
@@ -187,6 +202,7 @@ if (isDevelopment) {
   if (process.platform === 'win32') {
     process.on('message', (data) => {
       if (data === 'graceful-exit') {
+        close()
         app.quit()
       }
     })
@@ -197,3 +213,40 @@ if (isDevelopment) {
     })
   }
 }
+
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
+let tray;
+app.on('ready', async () => {
+  if (isDevelopment && !process.env.IS_TEST) {
+    // Install Vue Devtools
+    try {
+      await installExtension(VUEJS_DEVTOOLS)
+    } catch (e) {
+      console.error('Vue Devtools failed to install:', e.toString())
+    }
+  }
+  createWindow()
+
+  tray = new Tray(path.join(__static, "trayTemplate.png"));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "显示",
+      click: function () {
+        if (!win.isVisible()) {
+          win.restore()
+          win.show()
+        }
+      }
+    },
+    {
+      label: '退出',
+      click: function () {
+        close();
+        app.exit()
+      }
+    }
+  ])
+  tray.setContextMenu(contextMenu)
+})
