@@ -6,6 +6,7 @@
     "jsx": "preserve",
     "importHelpers": true,
     "moduleResolution": "node",
+    "noImplicitThis": false,
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "esModuleInterop": true,

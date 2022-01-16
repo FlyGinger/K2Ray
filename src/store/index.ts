@@ -18,7 +18,15 @@ export default new Vuex.Store({
       server: {},
     },
   },
-  mutations: {},
+
+  mutations: {
+    set(state, config) {
+      state.groups = config.groups;
+      state.routing = config.routing;
+      state.k2ray = config.k2ray;
+    },
+  },
+
   actions: {},
   modules: {},
 });

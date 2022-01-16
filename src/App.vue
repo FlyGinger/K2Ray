@@ -29,8 +29,7 @@
 export default {
   name: 'App',
 
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  data: () => ({
+  data: (): unknown => ({
     pages: [
       { title: '控制台', path: '/' },
       { title: '服务器', path: '/groupList' },

@@ -1,6 +1,10 @@
+import path from 'path';
+
 import { app, protocol, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
+
+import register from '@/api/register';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -8,6 +12,9 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 protocol.registerSchemesAsPrivileged([
   { scheme: 'app', privileges: { secure: true, standard: true } },
 ]);
+
+// eslint-disable-next-line no-underscore-dangle
+declare let __static: string;
 
 async function createWindow() {
   // Create the browser window.
@@ -19,15 +26,14 @@ async function createWindow() {
     fullscreenable: false,
     show: false,
     webPreferences: {
-
-      // Use pluginOptions.nodeIntegration, leave this alone
-      nodeIntegration: (process.env
-        .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
-      contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+      nodeIntegration: false, // is default value after Electron v5
+      contextIsolation: true, // protect against prototype pollution
+      preload: path.join(__static, 'preload.js'),
     },
   });
 
   win.once('ready-to-show', () => {
+    win.webContents.send('main-is-ready');
     win.show();
   });
 
@@ -69,6 +75,7 @@ app.on('ready', async () => {
       console.error('Vue Devtools failed to install:', e.toString());
     }
   }
+  register();
   createWindow();
 });
 
