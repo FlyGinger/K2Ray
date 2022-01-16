@@ -3,7 +3,7 @@
     <v-card flat>
       <v-card-title>K2Ray</v-card-title>
       <v-card-subtitle>A GUI for V2Ray.</v-card-subtitle>
-      <v-card-text>This is GroupList page.</v-card-text>
+      <v-card-text>This is Panel page.</v-card-text>
     </v-card>
   </div>
 </template>

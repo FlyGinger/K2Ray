@@ -14,6 +14,10 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
+    resizable: false,
+    maximizable: false,
+    fullscreenable: false,
+    show: false,
     webPreferences: {
 
       // Use pluginOptions.nodeIntegration, leave this alone
@@ -21,6 +25,10 @@ async function createWindow() {
         .ELECTRON_NODE_INTEGRATION as unknown) as boolean,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
     },
+  });
+
+  win.once('ready-to-show', () => {
+    win.show();
   });
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
