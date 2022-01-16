@@ -1,46 +1,32 @@
 <template>
-  <v-app>
-    <v-navigation-drawer app permanent>
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="text-h6"> K2Ray </v-list-item-title>
-          <v-list-item-subtitle> A GUI for V2Ray. </v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider></v-divider>
-
-      <v-list dense nav>
-        <v-list-item v-for="item in items" :key="item.title" :to="item.path">
-          <v-list-item-content>
-            <v-list-item-title>{{ item.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-
-    <v-main>
-      <router-view></router-view>
-    </v-main>
-  </v-app>
+  <div id="app">
+    <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div>
+    <router-view/>
+  </div>
 </template>
 
-<script>
-export default {
-  name: "App",
+<style>
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+}
 
-  data: () => ({
-    items: [
-      { title: "控制台", path: "/" },
-      { title: "服务器", path: "/groups" },
-      { title: "偏好", path: "/preference" },
-      { title: "路由", path: "/routing" },
-      { title: "关于", path: "/about" },
-    ],
-  }),
+#nav {
+  padding: 30px;
+}
 
-  mounted: () => {
-    document.title = "K2Ray";
-  },
-};
-</script>
+#nav a {
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+#nav a.router-link-exact-active {
+  color: #42b983;
+}
+</style>
