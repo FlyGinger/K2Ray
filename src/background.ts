@@ -4,7 +4,7 @@ import { app, protocol, BrowserWindow } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
-import register from '@/api/register';
+import { register, registerOnWin } from '@/api/register';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -60,6 +60,9 @@ async function createWindow() {
       });
     },
   );
+
+  // register API
+  registerOnWin(win);
 }
 
 // Quit when all windows are closed.

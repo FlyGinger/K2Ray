@@ -10,7 +10,7 @@
                           v-model="v2rayPath"></v-text-field>
           </v-col>
           <v-col cols="auto">
-            <v-btn class="mx-2" @click="updateV2RayPath" small>修改</v-btn>
+            <v-btn class="ma-1" @click="updateV2RayPath" small>修改</v-btn>
           </v-col>
         </v-row>
       </v-card-text>
@@ -26,9 +26,10 @@
                           v-model="socks"></v-text-field>
           </v-col>
           <v-col cols="auto">
-            <v-btn class="mx-2" @click="updateSocksPort" small>修改</v-btn>
+            <v-btn class="ma-1" @click="updateSocksPort" small>修改</v-btn>
           </v-col>
         </v-row>
+
         <v-row align="center" class="mt-2" no-gutters>
           <v-col cols="3">HTTP</v-col>
           <v-col>
@@ -36,7 +37,7 @@
                           v-model="http"></v-text-field>
           </v-col>
           <v-col cols="auto">
-            <v-btn class="mx-2" @click="updateHttpPort" small>修改</v-btn>
+            <v-btn class="ma-1" @click="updateHttpPort" small>修改</v-btn>
           </v-col>
         </v-row>
       </v-card-text>

@@ -25,3 +25,16 @@ interface Routing {
 
   [block: string]: Rule[]
 }
+
+interface K2Ray {
+  autoStart: boolean,
+  v2rayPath: string,
+  inbound: { socks: number, http: number },
+  server: Server | null,
+}
+
+interface State {
+  groups: Group[],
+  routing: Routing,
+  k2ray: K2Ray
+}

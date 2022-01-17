@@ -1,4 +1,9 @@
-import { clipboard, dialog, ipcMain } from 'electron';
+import { ChildProcessWithoutNullStreams, execSync, spawn } from 'child_process';
+import path from 'path';
+
+import {
+  BrowserWindow, clipboard, dialog, ipcMain, shell,
+} from 'electron';
 import Store from 'electron-store';
 
 function registerClipboardAPI(): void {
@@ -32,10 +37,207 @@ function registerPersistentConfigAPI(): void {
   });
 }
 
+function getAllNetworkServices(): string[] {
+  const raw = execSync('networksetup -listnetworkserviceorder', {});
+  const str = new TextDecoder().decode(raw);
+  const regexp = /\(\d+\)\s+.*/g;
+  const services = [...str.matchAll(regexp)];
+  const result = [] as string[];
+  services.forEach((service) => {
+    const j = service[0].indexOf(')');
+    result.push(service[0].substring(j + 1).trim());
+  });
+  return result;
+}
+
+function registerSystemProxyAPI(): void {
+  ipcMain.on('set-proxy', (event, port) => {
+    const services = getAllNetworkServices();
+    services.forEach((service) => {
+      try {
+        execSync(`networksetup -setwebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
+        execSync(`networksetup -setsecurewebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
+        execSync(`networksetup -setsocksfirewallproxy ${service} 127.0.0.1 ${port.socks.toString()}`, {});
+      } catch (e) {
+        // do nothing
+      }
+    });
+  });
+
+  ipcMain.on('unset-proxy', (event) => {
+    const services = getAllNetworkServices();
+    services.forEach((service) => {
+      try {
+        execSync(`networksetup -setwebproxystate ${service} off`, {});
+        execSync(`networksetup -setsecurewebproxystate ${service} off`, {});
+        execSync(`networksetup -setsocksfirewallproxystate ${service} off`, {});
+      } catch (e) {
+        // do nothing
+      }
+    });
+  });
+}
+
+function registerOpenFileAPI(): void {
+  ipcMain.on('open-file', (event, filePath) => {
+    shell.openPath(filePath);
+  });
+}
+
 function register(): void {
   registerClipboardAPI();
   registerPathAPI();
   registerPersistentConfigAPI();
+  registerSystemProxyAPI();
+  registerOpenFileAPI();
 }
 
-export default register;
+function v2rayConfigGenerate(state: State): unknown {
+  const certRaw = execSync(`${path.join(state.k2ray.v2rayPath, 'v2ctl')} cert`, {});
+  const certStr = new TextDecoder().decode(certRaw);
+  const cert = JSON.parse(certStr);
+
+  const { server } = state.k2ray;
+  if (server !== null) {
+    const config = {
+      log: {
+        access: path.join(state.k2ray.v2rayPath, 'access.log'),
+        error: path.join(state.k2ray.v2rayPath, 'error.log'),
+        logLevel: 'warning',
+      },
+      inbounds: [
+        {
+          port: state.k2ray.inbound.socks,
+          listen: '127.0.0.1',
+          protocol: 'socks',
+          settings: { udp: true, auth: 'noauth' },
+        },
+        {
+          port: state.k2ray.inbound.http,
+          listen: '127.0.0.1',
+          protocol: 'http',
+        },
+      ],
+      outbounds: [
+        {
+          tag: 'proxy',
+          protocol: server.protocol,
+          streamSettings: {
+            network: 'tcp',
+            security: 'tls',
+            tlsSettings: {
+              certificates: [cert],
+            },
+          },
+          settings: {
+            servers: [{
+              password: server.password,
+              port: server.port,
+              email: '',
+              level: 0,
+              address: server.address,
+            }],
+          },
+        },
+        {
+          tag: 'direct',
+          protocol: 'freedom',
+          settings: {
+            domainStrategy: 'UseIP',
+            userLevel: 0,
+          },
+        },
+        {
+          tag: 'block',
+          protocol: 'blackhole',
+          settings: {
+            response: {
+              type: 'none',
+            },
+          },
+        },
+      ],
+      routing: {
+        domainStrategy: 'IPIfNonMatch',
+        domainMatcher: 'mph',
+        rules: [] as unknown[],
+      },
+    };
+
+    Object.keys(state.routing).forEach((key) => {
+      const rules = state.routing[key];
+      const domains = [] as string[];
+      const ip = [] as string[];
+      rules.forEach((rule) => {
+        if (rule.type === 'domains') {
+          domains.push(rule.value);
+        } else {
+          ip.push(rule.value);
+        }
+      });
+      if (domains.length > 0) {
+        config.routing.rules.push({
+          type: 'field',
+          domains,
+          outboundTag: key,
+        });
+      }
+      if (ip.length > 0) {
+        config.routing.rules.push({
+          type: 'field',
+          ip,
+          outboundTag: key,
+        });
+      }
+    });
+    return config;
+  }
+  // unless user updated the config file and relaunch
+  return null;
+}
+
+let v2rayProcess: ChildProcessWithoutNullStreams;
+
+function v2rayLaunch(state: State): boolean {
+  const config = v2rayConfigGenerate(state);
+  if (config === null) {
+    return false;
+  }
+  const storeV2ray = new Store({ name: 'v2ray' });
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  storeV2ray.set(config as object);
+  v2rayProcess = spawn(path.join(state.k2ray.v2rayPath, 'v2ray'), ['-config', storeV2ray.path]);
+  return true;
+}
+
+function v2rayClose(): void {
+  if (v2rayProcess) {
+    while (!v2rayProcess.kill()) {
+      // waiting for v2ray to close
+    }
+  }
+}
+
+function registerV2RayAPI(win: BrowserWindow): void {
+  ipcMain.on('v2ray-close', (event) => {
+    v2rayClose();
+    win.webContents.send('v2ray-state', false);
+  });
+  ipcMain.on('v2ray-launch', (event, state) => {
+    if (v2rayLaunch(state)) {
+      win.webContents.send('v2ray-state', true);
+    }
+  });
+  ipcMain.on('v2ray-relaunch', (event, state) => {
+    v2rayClose();
+    if (v2rayLaunch(state)) {
+      win.webContents.send('v2ray-state', true);
+    }
+  });
+}
+
+function registerOnWin(win: BrowserWindow): void {
+  registerV2RayAPI(win);
+}
+
+export { register, registerOnWin };

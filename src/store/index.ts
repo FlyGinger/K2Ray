@@ -28,7 +28,8 @@ const store = new Vuex.Store({
       v2rayPath: '',
       inbound: { socks: 0, http: 0 },
       server: null as Server | null,
-    },
+    } as K2Ray,
+    v2rayOn: false,
   },
 
   mutations: {
@@ -59,6 +60,10 @@ const store = new Vuex.Store({
     setHttpPort(state, port) {
       Vue.set(state.k2ray.inbound, 'http', port);
       saveConfig(state);
+    },
+
+    setV2RayState(state, v2rayOn) {
+      Vue.set(state, 'v2rayOn', v2rayOn);
     },
 
     addGroup(state, group) {
