@@ -11,15 +11,12 @@
   </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'ConfirmDialog',
 
   props: {
-    control: {
-      show: Boolean,
-      text: String,
-    },
+    control: Object,
     cancel: Function,
     ok: Function,
   },

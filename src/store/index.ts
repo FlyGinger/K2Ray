@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
+import Routing from '@/views/Routing.vue';
 
 Vue.use(Vuex);
 
@@ -14,9 +15,14 @@ const store = new Vuex.Store({
     groups: [] as Group[],
     routing: {
       proxy: [] as Rule[],
-      direct: [] as Rule[],
+      direct: [
+        { type: 'domains', value: 'geosite:private' },
+        { type: 'domains', value: 'geosite:cn' },
+        { type: 'ip', value: 'geoip:private' },
+        { type: 'ip', value: 'geoip:cn' },
+      ] as Rule[],
       block: [] as Rule[],
-    },
+    } as Routing,
     k2ray: {
       autoStart: false,
       v2rayPath: '',
@@ -36,7 +42,7 @@ const store = new Vuex.Store({
     },
 
     setServerToUse(state, server) {
-      state.k2ray.server = server;
+      Vue.set(state.k2ray, 'server', server);
       saveConfig(state);
     },
 
@@ -46,7 +52,7 @@ const store = new Vuex.Store({
     },
 
     setGroup(state, payload) {
-      state.groups[payload.index] = payload.group;
+      Vue.set(state.groups, payload.index, payload.group);
       saveConfig(state);
     },
 
@@ -61,12 +67,27 @@ const store = new Vuex.Store({
     },
 
     setServer(state, payload) {
-      state.groups[payload.groupIndex].servers[payload.serverIndex] = payload.server;
+      Vue.set(state.groups[payload.groupIndex].servers, payload.serverIndex, payload.server);
       saveConfig(state);
     },
 
     rmServer(state, payload) {
       state.groups[payload.groupIndex].servers.splice(payload.serverIndex, 1);
+      saveConfig(state);
+    },
+
+    addRule(state, payload) {
+      state.routing[payload.outbound].push(payload.rule);
+      saveConfig(state);
+    },
+
+    setRule(state, payload) {
+      Vue.set(state.routing[payload.outbound], payload.index, payload.rule);
+      saveConfig(state);
+    },
+
+    rmRule(state, payload) {
+      state.routing[payload.outbound].splice(payload.index, 1);
       saveConfig(state);
     },
   },

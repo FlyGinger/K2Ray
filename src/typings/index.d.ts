@@ -17,3 +17,11 @@ interface Rule {
   type: string,
   value: string
 }
+
+interface Routing {
+  [proxy: string]: Rule[],
+
+  [direct: string]: Rule[],
+
+  [block: string]: Rule[]
+}

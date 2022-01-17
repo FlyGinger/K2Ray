@@ -13,15 +13,12 @@
   </v-snackbar>
 </template>
 
-<script>
+<script lang="ts">
 export default {
   name: 'ErrorSnackbar',
 
   props: {
-    control: {
-      show: Boolean,
-      text: String,
-    },
+    control: Object,
   },
 };
 </script>
