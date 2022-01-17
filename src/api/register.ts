@@ -21,7 +21,9 @@ function registerPersistentConfigAPI(): void {
 
   // save config to persistent storage
   ipcMain.on('save-config', (event, config) => {
-    store.set(config);
+    store.set('groups', config.groups);
+    store.set('routing', config.routing);
+    store.set('k2ray', config.k2ray);
   });
 }
 

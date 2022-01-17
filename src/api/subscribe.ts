@@ -1,26 +1,40 @@
 // parser for trojan server
 // format: trojan://password@address:port#name
-function parseTrojan(raw: string) {
-  const at = raw.indexOf('@');
+function parseTrojan(raw: string): Server {
+  // split name from url
+  let name = '';
+  let url = raw;
   const well = raw.indexOf('#');
-  if (at < 0 || well < 0) {
-    throw new Error(`不正确的 Trojan 协议： ${raw}`);
+  if (well >= 0) {
+    name = raw.substring(well + 1);
+    url = raw.substring(0, well); // so url can not use '#'
   }
-  const colon = raw.indexOf(':', at);
-  if (colon < 0) {
+
+  // parse url
+  const at = url.indexOf('@');
+  const colon = url.indexOf(':', at);
+  if (at < 0 || colon < 0) {
     throw new Error(`不正确的 Trojan 协议： ${raw}`);
   }
 
   return {
-    name: raw.substring(well + 1),
-    address: raw.substring(at + 1, colon),
-    port: parseInt(raw.substring(colon + 1, well), 10),
-    password: raw.substring(9, at),
+    name,
+    address: url.substring(at + 1, colon),
+    port: parseInt(url.substring(colon + 1), 10),
+    password: url.substring(9, at),
     protocol: 'trojan',
   };
 }
 
-function readSubscribe(url: string): Promise<unknown[]> {
+// parser for server URL
+function parseURL(raw: string): Server {
+  if (raw.startsWith('trojan://')) {
+    return parseTrojan(raw);
+  }
+  throw new Error(`不支持的协议： ${raw}`);
+}
+
+function readSubscribe(url: string): Promise<Server[]> {
   return fetch(url)
     .then((response) => {
       // construct a reject if failed to read
@@ -55,19 +69,15 @@ function readSubscribe(url: string): Promise<unknown[]> {
       const raw = Buffer.from(base64 as string, 'base64').toString().split(/\s/);
 
       // read servers from raw string
-      const servers = [];
+      const servers = [] as Server[];
       for (let i = 0; i < raw.length; i += 1) {
         if (raw[i].length > 0) {
           // use try because parser is not in promise chain,
           // and it sometimes needs to reject
           try {
             // check protocol for using different parser
-            if (raw[i].startsWith('trojan://')) {
-              const server = parseTrojan(raw[i]);
-              servers.push(server);
-            } else {
-              return Promise.reject(new Error(`不支持的协议： ${raw[i]}`));
-            }
+            const server = parseURL(raw[i]);
+            servers.push(server);
           } catch (e) {
             return Promise.reject(e);
           }
@@ -77,4 +87,4 @@ function readSubscribe(url: string): Promise<unknown[]> {
     });
 }
 
-export default readSubscribe;
+export { parseURL, readSubscribe };

@@ -11,17 +11,17 @@ function saveConfig(state: unknown): void {
 
 const store = new Vuex.Store({
   state: {
-    groups: [],
+    groups: [] as Group[],
     routing: {
-      proxy: [],
-      direct: [],
-      block: [],
+      proxy: [] as Rule[],
+      direct: [] as Rule[],
+      block: [] as Rule[],
     },
     k2ray: {
       autoStart: false,
       v2rayPath: '',
       inbound: { socks: 0, http: 0 },
-      server: {},
+      server: null as Server | null,
     },
   },
 
@@ -29,15 +29,44 @@ const store = new Vuex.Store({
     init(state, config) {
       // config is undefined when the first start
       if (config) {
-        state.groups = config.groups;
-        state.routing = config.routing;
-        state.k2ray = config.k2ray;
+        store.replaceState(config);
+      } else {
+        saveConfig(state);
       }
+    },
+
+    setServerToUse(state, server) {
+      state.k2ray.server = server;
       saveConfig(state);
     },
 
     addGroup(state, group) {
-      state.groups.push(group as never);
+      state.groups.push(group);
+      saveConfig(state);
+    },
+
+    setGroup(state, payload) {
+      state.groups[payload.index] = payload.group;
+      saveConfig(state);
+    },
+
+    rmGroup(state, index) {
+      state.groups.splice(index, 1);
+      saveConfig(state);
+    },
+
+    addServer(state, payload) {
+      state.groups[payload.index].servers.push(payload.server);
+      saveConfig(state);
+    },
+
+    setServer(state, payload) {
+      state.groups[payload.groupIndex].servers[payload.serverIndex] = payload.server;
+      saveConfig(state);
+    },
+
+    rmServer(state, payload) {
+      state.groups[payload.groupIndex].servers.splice(payload.serverIndex, 1);
       saveConfig(state);
     },
   },
