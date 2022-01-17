@@ -14,7 +14,7 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   invoke: (channel, func) => {
-    const validChannels = ['load-config'];
+    const validChannels = ['get-path', 'load-config'];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, func);
     }

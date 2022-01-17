@@ -46,6 +46,21 @@ const store = new Vuex.Store({
       saveConfig(state);
     },
 
+    setV2RayPath(state, path) {
+      Vue.set(state.k2ray, 'v2rayPath', path);
+      saveConfig(state);
+    },
+
+    setSocksPort(state, port) {
+      Vue.set(state.k2ray.inbound, 'socks', port);
+      saveConfig(state);
+    },
+
+    setHttpPort(state, port) {
+      Vue.set(state.k2ray.inbound, 'http', port);
+      saveConfig(state);
+    },
+
     addGroup(state, group) {
       state.groups.push(group);
       saveConfig(state);

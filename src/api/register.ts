@@ -1,4 +1,4 @@
-import { clipboard, ipcMain } from 'electron';
+import { clipboard, dialog, ipcMain } from 'electron';
 import Store from 'electron-store';
 
 function registerClipboardAPI(): void {
@@ -6,18 +6,23 @@ function registerClipboardAPI(): void {
   ipcMain.on('write-clipboard', (event, data) => clipboard.writeText(data));
 }
 
+function registerPathAPI(): void {
+  ipcMain.handle('get-path',
+    () => dialog.showOpenDialog({
+      title: '选择 V2Ray 核心目录',
+      properties: ['openDirectory', 'createDirectory'],
+    }));
+}
+
 function registerPersistentConfigAPI(): void {
   const store = new Store({ name: 'k2ray' });
   // load config from persistent storage and return a promise
-  ipcMain.handle('load-config', () => {
-    const config = {
-      // store.get() returns the whole object but is complained by eslint.
+  ipcMain.handle('load-config',
+    () => ({
       groups: store.get('groups'),
       routing: store.get('routing'),
       k2ray: store.get('k2ray'),
-    };
-    return new Promise((resolve, reject) => resolve(config));
-  });
+    }));
 
   // save config to persistent storage
   ipcMain.on('save-config', (event, config) => {
@@ -29,6 +34,7 @@ function registerPersistentConfigAPI(): void {
 
 function register(): void {
   registerClipboardAPI();
+  registerPathAPI();
   registerPersistentConfigAPI();
 }
 
