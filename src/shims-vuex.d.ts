@@ -13,7 +13,7 @@ declare module '@vue/runtime-core' {
     name: string,
     isSubscribe: boolean,
     subscribeURL: string,
-    servers: Server[]
+    servers: Array<Server>
   }
 
   interface Rule {
@@ -22,9 +22,9 @@ declare module '@vue/runtime-core' {
   }
 
   interface Routing {
-    proxy: Rule[],
-    direct: Rule[],
-    block: Rule[]
+    proxy: Array<Rule>,
+    direct: Array<Rule>,
+    block: Array<Rule>
   }
 
   interface K2Ray {
@@ -38,7 +38,7 @@ declare module '@vue/runtime-core' {
   }
 
   interface State {
-    groups: Group[],
+    groups: Array<Group>,
     routing: Routing,
     k2ray: K2Ray
   }

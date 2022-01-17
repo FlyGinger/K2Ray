@@ -1,14 +1,8 @@
-/* eslint-disable */
-
-import store from '../store';
-import { State } from '@vue/runtime-core';
-
-function loadConfig(): void {
+function writeClipboard(data: string): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  window.api.invoke('load-config')
-    .then((config: State) => {
-      store.commit('set', config);
-    });
+  window.api.send('write-clipboard', data);
 }
 
-export { loadConfig };
+// eslint-disable-next-line import/prefer-default-export
+export { writeClipboard };

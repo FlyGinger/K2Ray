@@ -5,17 +5,16 @@ const { contextBridge, ipcRenderer } = require('electron');
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
 contextBridge.exposeInMainWorld('api', {
-  // send: (channel: string, data: unknown) => {
-  //   // whitelist channels
-  //   const validChannels = ['toMain'];
-  //   if (validChannels.includes(channel)) {
-  //     ipcRenderer.send(channel, data);
-  //   }
-  // },
+  send: (channel, data) => {
+    // whitelist channels
+    const validChannels = ['write-clipboard', 'save-config'];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
 
   invoke: (channel, func) => {
-    const validChannels = ['load-config', // persistent config
-    ];
+    const validChannels = ['load-config'];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, func);
     }
