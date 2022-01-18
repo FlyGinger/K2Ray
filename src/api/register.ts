@@ -211,9 +211,9 @@ function v2rayLaunch(state: State): boolean {
 }
 
 function v2rayClose(): void {
-  if (v2rayProcess) {
-    while (!v2rayProcess.kill()) {
-      // waiting for v2ray to close
+  while (!v2rayProcess.kill()) {
+    if (v2rayProcess.exitCode !== null) {
+      break;
     }
   }
 }
@@ -234,10 +234,16 @@ function registerV2RayAPI(win: BrowserWindow): void {
       win.webContents.send('v2ray-state', true);
     }
   });
+
+  win.on('close', () => {
+    ipcMain.removeAllListeners('v2ray-close');
+    ipcMain.removeAllListeners('v2ray-launch');
+    ipcMain.removeAllListeners('v2ray-relaunch');
+  });
 }
 
 function registerOnWin(win: BrowserWindow): void {
   registerV2RayAPI(win);
 }
 
-export { register, registerOnWin };
+export { register, registerOnWin, v2rayClose };

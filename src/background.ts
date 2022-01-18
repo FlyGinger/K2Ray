@@ -1,10 +1,12 @@
 import path from 'path';
 
-import { app, protocol, BrowserWindow } from 'electron';
+import {
+  app, BrowserWindow, Menu, protocol, Tray,
+} from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
-import { register, registerOnWin } from '@/api/register';
+import { register, registerOnWin, v2rayClose } from '@/api/register';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -83,6 +85,7 @@ app.on('activate', () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+let tray: Tray;
 app.on('ready', async () => {
   if (isDevelopment && !process.env.IS_TEST) {
     // Install Vue Devtools
@@ -94,7 +97,31 @@ app.on('ready', async () => {
   }
   register();
   createWindow();
+
+  tray = new Tray(path.join(__static, 'trayIcon/trayTemplate.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: '显示',
+      click() {
+        if (BrowserWindow.getAllWindows().length === 0) {
+          createWindow();
+        }
+      },
+    },
+    {
+      label: '退出',
+      click() {
+        v2rayClose();
+        app.quit();
+      },
+    },
+  ]);
+  tray.setContextMenu(contextMenu);
 });
+
+if (process.platform === 'darwin') {
+  app.dock.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
+}
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
