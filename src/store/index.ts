@@ -34,12 +34,17 @@ const store = new Vuex.Store({
 
   mutations: {
     init(state, config) {
-      // config is undefined when the first start
-      if (config) {
-        store.replaceState(config);
-      } else {
-        saveConfig(state);
+      // config.xxx is undefined when the first start
+      if (config.groups) {
+        Vue.set(state, 'groups', config.groups);
       }
+      if (config.routing) {
+        Vue.set(state, 'routing', config.routing);
+      }
+      if (config.k2ray) {
+        Vue.set(state, 'k2ray', config.k2ray);
+      }
+      saveConfig(state);
     },
 
     setServerToUse(state, server) {

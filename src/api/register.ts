@@ -50,31 +50,39 @@ function getAllNetworkServices(): string[] {
   return result;
 }
 
+function setSystemProxy(port: { socks: number, http: number }): void {
+  const services = getAllNetworkServices();
+  services.forEach((service) => {
+    try {
+      execSync(`networksetup -setwebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
+      execSync(`networksetup -setsecurewebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
+      execSync(`networksetup -setsocksfirewallproxy ${service} 127.0.0.1 ${port.socks.toString()}`, {});
+    } catch (e) {
+      // do nothing
+    }
+  });
+}
+
+function unsetSystemProxy(): void {
+  const services = getAllNetworkServices();
+  services.forEach((service) => {
+    try {
+      execSync(`networksetup -setwebproxystate ${service} off`, {});
+      execSync(`networksetup -setsecurewebproxystate ${service} off`, {});
+      execSync(`networksetup -setsocksfirewallproxystate ${service} off`, {});
+    } catch (e) {
+      // do nothing
+    }
+  });
+}
+
 function registerSystemProxyAPI(): void {
   ipcMain.on('set-proxy', (event, port) => {
-    const services = getAllNetworkServices();
-    services.forEach((service) => {
-      try {
-        execSync(`networksetup -setwebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
-        execSync(`networksetup -setsecurewebproxy ${service} 127.0.0.1 ${port.http.toString()}`, {});
-        execSync(`networksetup -setsocksfirewallproxy ${service} 127.0.0.1 ${port.socks.toString()}`, {});
-      } catch (e) {
-        // do nothing
-      }
-    });
+    setSystemProxy(port);
   });
 
   ipcMain.on('unset-proxy', (event) => {
-    const services = getAllNetworkServices();
-    services.forEach((service) => {
-      try {
-        execSync(`networksetup -setwebproxystate ${service} off`, {});
-        execSync(`networksetup -setsecurewebproxystate ${service} off`, {});
-        execSync(`networksetup -setsocksfirewallproxystate ${service} off`, {});
-      } catch (e) {
-        // do nothing
-      }
-    });
+    unsetSystemProxy();
   });
 }
 
@@ -211,9 +219,11 @@ function v2rayLaunch(state: State): boolean {
 }
 
 function v2rayClose(): void {
-  while (!v2rayProcess.kill()) {
-    if (v2rayProcess.exitCode !== null) {
-      break;
+  if (v2rayProcess) {
+    while (!v2rayProcess.kill()) {
+      if (v2rayProcess.exitCode !== null) {
+        break;
+      }
     }
   }
 }
@@ -246,4 +256,9 @@ function registerOnWin(win: BrowserWindow): void {
   registerV2RayAPI(win);
 }
 
-export { register, registerOnWin, v2rayClose };
+function clearBeforeQuit(): void {
+  unsetSystemProxy();
+  v2rayClose();
+}
+
+export { clearBeforeQuit, register, registerOnWin };

@@ -58,6 +58,11 @@
       </v-card-text>
     </v-card>
 
+    <v-card class="mt-2" flat outlined tile>
+      <v-card-title>正在使用的服务器</v-card-title>
+      <v-card-subtitle>{{ serverToUse }}</v-card-subtitle>
+    </v-card>
+
     <SuccessSnackbar :control="successSnackbar"></SuccessSnackbar>
   </div>
 </template>
@@ -89,6 +94,13 @@ export default {
   computed: {
     v2rayOn(): boolean {
       return this.$store.state.v2rayOn;
+    },
+
+    serverToUse(): string {
+      if (this.$store.state.k2ray.server === null) {
+        return '未选择服务器';
+      }
+      return this.$store.state.k2ray.server.name;
     },
   },
 

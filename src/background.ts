@@ -6,7 +6,7 @@ import {
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
-import { register, registerOnWin, v2rayClose } from '@/api/register';
+import { clearBeforeQuit, register, registerOnWin } from '@/api/register';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -73,6 +73,8 @@ app.on('window-all-closed', () => {
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
     app.quit();
+  } else {
+    app.dock.hide();
   }
 });
 
@@ -111,7 +113,7 @@ app.on('ready', async () => {
     {
       label: '退出',
       click() {
-        v2rayClose();
+        clearBeforeQuit();
         app.quit();
       },
     },
