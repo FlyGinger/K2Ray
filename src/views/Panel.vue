@@ -1,7 +1,24 @@
 <template>
   <div class="ma-2">
     <v-card flat outlined tile>
-      <v-card-title>系统代理</v-card-title>
+      <v-card-title>
+        <v-row align="center" no-gutters>
+          <v-col cols="auto">系统代理</v-col>
+          <v-col cols="auto">
+            <v-chip v-if="systemProxyOn" class="ml-2" color="success" small>已设置</v-chip>
+            <v-chip v-else class="ml-2" color="error" small>未设置</v-chip>
+          </v-col>
+
+          <v-col>
+            <v-spacer></v-spacer>
+          </v-col>
+        </v-row>
+      </v-card-title>
+
+      <v-card-subtitle>
+        很抱歉，K2Ray 不能准确监测系统代理状态。
+      </v-card-subtitle>
+
       <v-card-text>
         <v-row no-gutters>
           <v-col cols="auto">
@@ -96,6 +113,10 @@ export default {
       return this.$store.state.v2rayOn;
     },
 
+    systemProxyOn(): boolean {
+      return this.$store.state.systemProxyOn;
+    },
+
     serverToUse(): string {
       if (this.$store.state.k2ray.server === null) {
         return '未选择服务器';
@@ -110,12 +131,14 @@ export default {
         socks: this.$store.state.k2ray.inbound.socks,
         http: this.$store.state.k2ray.inbound.http,
       });
+      this.$store.commit('setSystemProxyState', true);
       this.successSnackbar.text = '设置完成！';
       this.successSnackbar.show = true;
     },
 
     unsetSystemProxy(): void {
       unsetSystemProxy();
+      this.$store.commit('setSystemProxyState', false);
       this.successSnackbar.text = '清除完成！';
       this.successSnackbar.show = true;
     },

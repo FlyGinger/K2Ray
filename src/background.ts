@@ -46,7 +46,7 @@ async function createWindow() {
   } else {
     createProtocol('app');
     // Load the index.html when not in development
-    win.loadURL('app://./index.html');
+    await win.loadURL('app://./index.html');
   }
 
   // bypass CORS
@@ -98,7 +98,7 @@ app.on('ready', async () => {
     }
   }
   register();
-  createWindow();
+  await createWindow();
 
   tray = new Tray(path.join(__static, 'trayIcon/trayTemplate.png'));
   const contextMenu = Menu.buildFromTemplate([

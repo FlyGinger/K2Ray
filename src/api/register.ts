@@ -205,6 +205,7 @@ function v2rayConfigGenerate(state: State): unknown {
 }
 
 let v2rayProcess: ChildProcessWithoutNullStreams;
+let channel: NodeJS.Timer;
 
 function v2rayLaunch(state: State): boolean {
   const config = v2rayConfigGenerate(state);
@@ -228,6 +229,10 @@ function v2rayClose(): void {
   }
 }
 
+function v2rayState(): boolean {
+  return v2rayProcess && v2rayProcess.exitCode === null;
+}
+
 function registerV2RayAPI(win: BrowserWindow): void {
   ipcMain.on('v2ray-close', (event) => {
     v2rayClose();
@@ -245,10 +250,15 @@ function registerV2RayAPI(win: BrowserWindow): void {
     }
   });
 
+  channel = setInterval(() => {
+    win.webContents.send('v2ray-state', v2rayState());
+  }, 1000);
+
   win.on('close', () => {
     ipcMain.removeAllListeners('v2ray-close');
     ipcMain.removeAllListeners('v2ray-launch');
     ipcMain.removeAllListeners('v2ray-relaunch');
+    clearInterval(channel);
   });
 }
 
