@@ -4,7 +4,6 @@ import {
   app, BrowserWindow, Menu, protocol, Tray,
 } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
-import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer';
 
 import { clearBeforeQuit, register, registerOnWin } from '@/api/register';
 
@@ -65,23 +64,22 @@ async function createWindow() {
 
   // register API
   registerOnWin(win);
+
+  // focus me!
+  win.focus();
+}
+
+if (process.platform === 'darwin') {
+  app.dock.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
 }
 
 // Quit when all windows are closed.
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit();
-  } else {
+  if (process.platform === 'darwin') {
     app.dock.hide();
   }
-});
-
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (BrowserWindow.getAllWindows().length === 0) createWindow();
 });
 
 // This method will be called when Electron has finished
@@ -89,14 +87,6 @@ app.on('activate', () => {
 // Some APIs can only be used after this event occurs.
 let tray: Tray;
 app.on('ready', async () => {
-  if (isDevelopment && !process.env.IS_TEST) {
-    // Install Vue Devtools
-    try {
-      await installExtension(VUEJS_DEVTOOLS);
-    } catch (e) {
-      console.error('Vue Devtools failed to install:', e.toString());
-    }
-  }
   register();
   await createWindow();
 
@@ -106,6 +96,9 @@ app.on('ready', async () => {
       label: '显示',
       click() {
         if (BrowserWindow.getAllWindows().length === 0) {
+          if (process.platform === 'darwin') {
+            app.dock.show();
+          }
           createWindow();
         }
       },
@@ -113,7 +106,6 @@ app.on('ready', async () => {
     {
       label: '退出',
       click() {
-        clearBeforeQuit();
         app.quit();
       },
     },
@@ -121,9 +113,9 @@ app.on('ready', async () => {
   tray.setContextMenu(contextMenu);
 });
 
-if (process.platform === 'darwin') {
-  app.dock.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
-}
+app.on('before-quit', () => {
+  clearBeforeQuit();
+});
 
 // Exit cleanly on request from parent process in development mode.
 if (isDevelopment) {
