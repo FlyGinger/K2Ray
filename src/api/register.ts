@@ -118,7 +118,7 @@ function register(): void {
 }
 
 function v2rayConfigGenerate(state: State): unknown {
-  const certRaw = execSync(`${path.join(state.k2ray.v2rayPath, 'v2ctl')} cert`, {});
+  const certRaw = execSync(`"${path.join(state.k2ray.v2rayPath, 'v2ctl')}" cert`, {});
   const certStr = new TextDecoder().decode(certRaw);
   const cert = JSON.parse(certStr);
 
