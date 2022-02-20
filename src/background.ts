@@ -65,12 +65,18 @@ async function createWindow() {
   // register API
   registerOnWin(win);
 
+  if (process.platform === 'win32') {
+    win.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
+  }
+
   // focus me!
-  win.focus();
+  win.moveTop();
 }
 
 if (process.platform === 'darwin') {
   app.dock.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
+} else {
+  Menu.setApplicationMenu(null);
 }
 
 // Quit when all windows are closed.
@@ -90,7 +96,11 @@ app.on('ready', async () => {
   register();
   await createWindow();
 
-  tray = new Tray(path.join(__static, 'trayIcon/trayTemplate.png'));
+  if (process.platform === 'darwin') {
+    tray = new Tray(path.join(__static, 'trayIcon/trayTemplate.png'));
+  } else {
+    tray = new Tray(path.join(__static, 'trayIcon/trayWin.png'));
+  }
   const contextMenu = Menu.buildFromTemplate([
     {
       label: '显示',

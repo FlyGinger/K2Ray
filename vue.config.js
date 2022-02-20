@@ -11,6 +11,10 @@ module.exports = {
           type: 'distribution',
           target: ['dmg'],
         },
+        win: {
+          icon: 'public/appIcon/icon_512x512.icns',
+          target: 'portable',
+        },
       },
     },
   },

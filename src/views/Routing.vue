@@ -16,7 +16,7 @@
       <v-tabs show-arrows v-model="tab">
         <v-tab v-for="(rules, outbound) in routing" :key="outbound">{{ outbound }}</v-tab>
       </v-tabs>
-      <v-tabs-items class="overflow-y-auto" style="height: 446px" v-model="tab">
+      <v-tabs-items class="overflow-y-auto" style="height: 444px" v-model="tab">
         <v-tab-item v-for="(rules, outbound) in routing" :key="outbound">
           <RuleList :outbound="outbound" :rules="rules"></RuleList>
         </v-tab-item>

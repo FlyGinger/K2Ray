@@ -31,7 +31,7 @@
       <v-tabs show-arrows v-model="tab">
         <v-tab v-for="(group, gi) in groups" :key="gi">{{ group.name }}</v-tab>
       </v-tabs>
-      <v-tabs-items class="overflow-y-auto" style="height: 446px" v-model="tab">
+      <v-tabs-items class="overflow-y-auto" style="height: 444px" v-model="tab">
         <v-tab-item v-for="(group, gi) in groups" :key="gi">
           <ServerList :groupIndex="gi" :group="group"></ServerList>
         </v-tab-item>
