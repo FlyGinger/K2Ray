@@ -1,6 +1,6 @@
 {
   "name": "k2ray",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A GUI for V2Ray.",
   "author": "zenk",
   "private": true,
@@ -8,7 +8,8 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "electron:build": "vue-cli-service electron:build",
+    "electron:build:mac:arm": "vue-cli-service electron:build --mac --arm64",
+    "electron:build:win:amd": "vue-cli-service electron:build --win --x64",
     "electron:serve": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps"
