@@ -7,6 +7,7 @@ import { BrowserWindow } from 'electron';
 
 let logHandler: (info: unknown) => void;
 
+// Print info to console in renderer process.
 function log(info: unknown): void {
   logHandler(info);
 }

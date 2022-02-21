@@ -5,8 +5,6 @@ This file provides functions to get and set system proxy.
 
 import { execSync } from 'child_process';
 
-import { log } from './log';
-
 interface SystemProxy {
   HTTPEnable: boolean,
   HTTPPort: number,
@@ -69,19 +67,81 @@ function checkSystemProxy(port: { socks: number, http: number }): boolean {
   return false;
 }
 
+function getActiveService(): string[] {
+  // get all active device
+  let raw = execSync('ifconfig');
+  let str = new TextDecoder().decode(raw);
+  let lines = str.split('\n');
+  let name = '';
+  const active = new Set<string>();
+  lines.forEach((v: string) => {
+    if (v.startsWith('\t')) {
+      if (v.endsWith('status: active')) {
+        active.add(name);
+      }
+    } else {
+      const index = v.indexOf(':');
+      name = v.substring(0, index);
+    }
+  });
+
+  // find out all active service
+  const result: string[] = [];
+  raw = execSync('networksetup -listnetworkserviceorder');
+  str = new TextDecoder().decode(raw);
+  lines = str.split('\n');
+  lines.forEach((v: string) => {
+    if (v.startsWith('(Hardware Port: ')) {
+      let start = 16;
+      let end = start;
+      while (v.charAt(end) !== ',') {
+        end += 1;
+      }
+      const service = v.substring(start, end);
+
+      start = end + 10;
+      end = start + 1;
+      while (v.charAt(end) !== ')') {
+        end += 1;
+      }
+      const device = v.substring(start, end);
+
+      if (active.has(device)) {
+        result.push(service);
+      }
+    }
+  });
+
+  return result;
+}
+
 // Set system proxy.
 // Do nothing on unsupported platform.
 function setSystemProxy(port: { socks: number, http: number }): void {
-  if (process.platform === 'win32') {
+  if (process.platform === 'darwin') {
+    const services = getActiveService();
+    services.forEach((s: string) => {
+      execSync(`networksetup -setwebproxy "${s}" 127.0.0.1 ${port.http}`);
+      execSync(`networksetup -setsecurewebproxy "${s}" 127.0.0.1 ${port.http}`);
+      execSync(`networksetup -setsocksfirewallproxy "${s}" 127.0.0.1 ${port.socks}`);
+    });
+  } else if (process.platform === 'win32') {
     execSync(`reg add ${regName} /v ProxyEnable /t REG_DWORD /d 1 /f`);
-    execSync(`reg add ${regName} /v ProxyServer /d "127.0.0.1:${port.http.toString()}" /f`);
+    execSync(`reg add ${regName} /v ProxyServer /d "127.0.0.1:${port.http}" /f`);
   }
 }
 
 // Unset system proxy.
 // Do nothing on unsupported platform.
 function unsetSystemProxy(): void {
-  if (process.platform === 'win32') {
+  if (process.platform === 'darwin') {
+    const services = getActiveService();
+    services.forEach((s: string) => {
+      execSync(`networksetup -setwebproxystate "${s}" off`);
+      execSync(`networksetup -setsecurewebproxystate "${s}" off`);
+      execSync(`networksetup -setsocksfirewallproxystate "${s}" off`);
+    });
+  } else if (process.platform === 'win32') {
     execSync(`reg add ${regName} /v ProxyEnable /t REG_DWORD /d 0 /f`);
   }
 }

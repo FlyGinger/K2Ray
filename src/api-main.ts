@@ -40,68 +40,6 @@ function registerPersistentConfigAPI(): void {
   });
 }
 
-function getAllNetworkServices(): string[] {
-  const raw = execSync('networksetup -listnetworkserviceorder', {});
-  const str = new TextDecoder().decode(raw);
-  const regexp = /\(\d+\)\s+.*/g;
-  const services = [...str.matchAll(regexp)];
-  const result = [] as string[];
-  services.forEach((service) => {
-    const j = service[0].indexOf(')');
-    result.push(service[0].substring(j + 1)
-      .trim());
-  });
-  return result;
-}
-
-// function setSystemProxy(port: { socks: number, http: number }): void {
-//   if (process.platform === 'win32') {
-//     try {
-// eslint-disable-next-line max-len
-//       execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f', {});
-// eslint-disable-next-line max-len
-//       execSync(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /d "127.0.0.1:${port.http.toString()}" /f`, {});
-//     } catch (e) {
-//       // do nothing
-//     }
-//   } else {
-//     const services = getAllNetworkServices();
-//     services.forEach((service) => {
-//       try {
-//         execSync(`networksetup -setwebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
-// eslint-disable-next-line max-len
-//         execSync(`networksetup -setsecurewebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
-// eslint-disable-next-line max-len
-//         execSync(`networksetup -setsocksfirewallproxy "${service}" 127.0.0.1 ${port.socks.toString()}`, {});
-//       } catch (e) {
-//         // do nothing
-//       }
-//     });
-//   }
-// }
-//
-// function unsetSystemProxy(): void {
-//   if (process.platform === 'win32') {
-//     try {
-// eslint-disable-next-line max-len
-//       execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f', {});
-//     } catch (e) {
-//       // do nothing
-//     }
-//   } else {
-//     const services = getAllNetworkServices();
-//     services.forEach((service) => {
-//       try {
-//         execSync(`networksetup -setwebproxystate "${service}" off`, {});
-//         execSync(`networksetup -setsecurewebproxystate "${service}" off`, {});
-//         execSync(`networksetup -setsocksfirewallproxystate "${service}" off`, {});
-//       } catch (e) {
-//         // do nothing
-//       }
-//     });
-//   }
-// }
-
 function registerSystemProxyAPI(): void {
   ipcMain.on('set-proxy', (event, port) => {
     setSystemProxy(port);
