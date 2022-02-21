@@ -7,7 +7,7 @@ import {
 import Store from 'electron-store';
 
 import { log, registerLog } from '@/api/log';
-import { checkSystemProxy } from '@/api/proxy';
+import { checkSystemProxy, setSystemProxy, unsetSystemProxy } from '@/api/proxy';
 
 function registerClipboardAPI(): void {
   // write string to clipboard
@@ -48,53 +48,59 @@ function getAllNetworkServices(): string[] {
   const result = [] as string[];
   services.forEach((service) => {
     const j = service[0].indexOf(')');
-    result.push(service[0].substring(j + 1).trim());
+    result.push(service[0].substring(j + 1)
+      .trim());
   });
   return result;
 }
 
-function setSystemProxy(port: { socks: number, http: number }): void {
-  if (process.platform === 'win32') {
-    try {
-      execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f', {});
-      execSync(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /d "127.0.0.1:${port.http.toString()}" /f`, {});
-    } catch (e) {
-      // do nothing
-    }
-  } else {
-    const services = getAllNetworkServices();
-    services.forEach((service) => {
-      try {
-        execSync(`networksetup -setwebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
-        execSync(`networksetup -setsecurewebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
-        execSync(`networksetup -setsocksfirewallproxy "${service}" 127.0.0.1 ${port.socks.toString()}`, {});
-      } catch (e) {
-        // do nothing
-      }
-    });
-  }
-}
-
-function unsetSystemProxy(): void {
-  if (process.platform === 'win32') {
-    try {
-      execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f', {});
-    } catch (e) {
-      // do nothing
-    }
-  } else {
-    const services = getAllNetworkServices();
-    services.forEach((service) => {
-      try {
-        execSync(`networksetup -setwebproxystate "${service}" off`, {});
-        execSync(`networksetup -setsecurewebproxystate "${service}" off`, {});
-        execSync(`networksetup -setsocksfirewallproxystate "${service}" off`, {});
-      } catch (e) {
-        // do nothing
-      }
-    });
-  }
-}
+// function setSystemProxy(port: { socks: number, http: number }): void {
+//   if (process.platform === 'win32') {
+//     try {
+// eslint-disable-next-line max-len
+//       execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 1 /f', {});
+// eslint-disable-next-line max-len
+//       execSync(`reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer /d "127.0.0.1:${port.http.toString()}" /f`, {});
+//     } catch (e) {
+//       // do nothing
+//     }
+//   } else {
+//     const services = getAllNetworkServices();
+//     services.forEach((service) => {
+//       try {
+//         execSync(`networksetup -setwebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
+// eslint-disable-next-line max-len
+//         execSync(`networksetup -setsecurewebproxy "${service}" 127.0.0.1 ${port.http.toString()}`, {});
+// eslint-disable-next-line max-len
+//         execSync(`networksetup -setsocksfirewallproxy "${service}" 127.0.0.1 ${port.socks.toString()}`, {});
+//       } catch (e) {
+//         // do nothing
+//       }
+//     });
+//   }
+// }
+//
+// function unsetSystemProxy(): void {
+//   if (process.platform === 'win32') {
+//     try {
+// eslint-disable-next-line max-len
+//       execSync('reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyEnable /t REG_DWORD /d 0 /f', {});
+//     } catch (e) {
+//       // do nothing
+//     }
+//   } else {
+//     const services = getAllNetworkServices();
+//     services.forEach((service) => {
+//       try {
+//         execSync(`networksetup -setwebproxystate "${service}" off`, {});
+//         execSync(`networksetup -setsecurewebproxystate "${service}" off`, {});
+//         execSync(`networksetup -setsocksfirewallproxystate "${service}" off`, {});
+//       } catch (e) {
+//         // do nothing
+//       }
+//     });
+//   }
+// }
 
 function registerSystemProxyAPI(): void {
   ipcMain.on('set-proxy', (event, port) => {
@@ -138,7 +144,10 @@ function v2rayConfigGenerate(state: State): unknown {
           port: state.k2ray.inbound.socks,
           listen: '127.0.0.1',
           protocol: 'socks',
-          settings: { udp: true, auth: 'noauth' },
+          settings: {
+            udp: true,
+            auth: 'noauth',
+          },
         },
         {
           port: state.k2ray.inbound.http,
@@ -192,32 +201,33 @@ function v2rayConfigGenerate(state: State): unknown {
       },
     };
 
-    Object.keys(state.routing).forEach((key) => {
-      const rules = state.routing[key];
-      const domains = [] as string[];
-      const ip = [] as string[];
-      rules.forEach((rule) => {
-        if (rule.type === 'domains') {
-          domains.push(rule.value);
-        } else {
-          ip.push(rule.value);
+    Object.keys(state.routing)
+      .forEach((key) => {
+        const rules = state.routing[key];
+        const domains = [] as string[];
+        const ip = [] as string[];
+        rules.forEach((rule) => {
+          if (rule.type === 'domains') {
+            domains.push(rule.value);
+          } else {
+            ip.push(rule.value);
+          }
+        });
+        if (domains.length > 0) {
+          config.routing.rules.push({
+            type: 'field',
+            domains,
+            outboundTag: key,
+          });
+        }
+        if (ip.length > 0) {
+          config.routing.rules.push({
+            type: 'field',
+            ip,
+            outboundTag: key,
+          });
         }
       });
-      if (domains.length > 0) {
-        config.routing.rules.push({
-          type: 'field',
-          domains,
-          outboundTag: key,
-        });
-      }
-      if (ip.length > 0) {
-        config.routing.rules.push({
-          type: 'field',
-          ip,
-          outboundTag: key,
-        });
-      }
-    });
     return config;
   }
   // unless user updated the config file and relaunch
@@ -294,7 +304,10 @@ function clearBeforeQuit(): void {
 
 ipcMain.on('main-debug', (event) => {
   log('haha');
-  checkSystemProxy({ http: 1, socks: 2 });
+  log(checkSystemProxy({
+    http: 8889,
+    socks: 8888,
+  }));
 });
 
 export { clearBeforeQuit, register, registerOnWin };
