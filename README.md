@@ -40,12 +40,12 @@ sudo xattr -r -d com.apple.quarantine /path/to/K2Ray.app
 
 ## Screenshot
 
-![控制台](./doc/image/v0.2.0/1.png)
+![控制台](doc/image/1.png)
 
-![服务器](./doc/image/v0.2.0/2.png)
+![服务器](doc/image/2.png)
 
-![偏好](./doc/image/v0.2.0/3.png)
+![偏好](doc/image/3.png)
 
-![路由](./doc/image/v0.2.0/4.png)
+![路由](doc/image/4.png)
 
-![关于](./doc/image/v0.2.0/5.png)
+![关于](doc/image/5.png)
