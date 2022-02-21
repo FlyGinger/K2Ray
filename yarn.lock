@@ -1264,9 +1264,9 @@
   integrity sha512-iiUgKzV9AuaEkZqkOLDIvlQiL6ltuZd9tGcW3gwpnX8JbuiuhFlEGmmFXEXkN50Cvq7Os88IY2v0dkDqXYWVgA==
 
 "@types/node@*":
-  version "17.0.18"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.18.tgz#3b4fed5cfb58010e3a2be4b6e74615e4847f1074"
-  integrity sha512-eKj4f/BsN/qcculZiRSujogjvp5O/k4lOW5m35NopjZM/QwLOR075a8pJW5hD+Rtdm2DaCVPENS6KtSQnUD6BA==
+  version "17.0.19"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-17.0.19.tgz#726171367f404bfbe8512ba608a09ebad810c7e6"
+  integrity sha512-PfeQhvcMR4cPFVuYfBN4ifG7p9c+Dlh3yUZR6k+5yQK7wX3gDgVxBly4/WkBRs9x4dmcy1TVl08SY67wwtEvmA==
 
 "@types/node@^14.6.2":
   version "14.18.12"
@@ -4061,9 +4061,9 @@ dmg-builder@22.14.13:
     dmg-license "^1.0.9"
 
 dmg-license@^1.0.9:
-  version "1.0.10"
-  resolved "https://registry.yarnpkg.com/dmg-license/-/dmg-license-1.0.10.tgz#89f52afae25d827fce8d818c13aff30af1c16bcc"
-  integrity sha512-SVeeyiOeinV5JCPHXMdKOgK1YVbak/4+8WL2rBnfqRYpA5FaeFaQnQWb25x628am1w70CbipGDv9S51biph63A==
+  version "1.0.11"
+  resolved "https://registry.yarnpkg.com/dmg-license/-/dmg-license-1.0.11.tgz#7b3bc3745d1b52be7506b4ee80cb61df6e4cd79a"
+  integrity sha512-ZdzmqwKmECOWJpqefloC5OJy1+WZBBse5+MR88z9g9Zn4VY+WYUkAyojmhzJckH5YbbZGcYIuGAkY5/Ys5OM2Q==
   dependencies:
     "@types/plist" "^3.0.1"
     "@types/verror" "^1.10.3"
@@ -10473,9 +10473,9 @@ url-parse-lax@^3.0.0:
     prepend-http "^2.0.0"
 
 url-parse@^1.4.3, url-parse@^1.5.3:
-  version "1.5.7"
-  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.7.tgz#00780f60dbdae90181f51ed85fb24109422c932a"
-  integrity sha512-HxWkieX+STA38EDk7CE9MEryFeHCKzgagxlGvsdS7WBImq9Mk+PGwiT56w82WI3aicwJA8REp42Cxo98c8FZMA==
+  version "1.5.9"
+  resolved "https://registry.yarnpkg.com/url-parse/-/url-parse-1.5.9.tgz#05ff26484a0b5e4040ac64dcee4177223d74675e"
+  integrity sha512-HpOvhKBvre8wYez+QhHcYiVvVmeF6DVnuSOOPhe3cTum3BnqHhvKaZm8FU5yTiOu/Jut2ZpB2rA/SbBA1JIGlQ==
   dependencies:
     querystringify "^2.1.1"
     requires-port "^1.0.0"
@@ -11162,9 +11162,9 @@ yargs@^17.0.1:
     yargs-parser "^21.0.0"
 
 yarn-audit-fix@^9.0.11:
-  version "9.0.11"
-  resolved "https://registry.yarnpkg.com/yarn-audit-fix/-/yarn-audit-fix-9.0.11.tgz#aca3ce478f43cdad70a2f9da4d0d65f2882ac405"
-  integrity sha512-E5+RnniSMEfqLmQJnTPgxtLAkNidKhUPPC3jkuYcO1m/eAYvc+qpX2lImBhs8zF0pOJ1ZOx8Y8mv5JjqbCXWEA==
+  version "9.1.2"
+  resolved "https://registry.yarnpkg.com/yarn-audit-fix/-/yarn-audit-fix-9.1.2.tgz#02afa2e7fc0ddb4210a70b00b0e41ba6f10fc894"
+  integrity sha512-qSC5x7Yp/vt0sZXNptDMG7oFIes4S/hE7S05z7+m2JaWfrKgQwc+2MAZizYhYSjuAn+qn/mNijbFD3ahri5u2g==
   dependencies:
     "@types/find-cache-dir" "^3.2.1"
     "@types/fs-extra" "^9.0.13"
