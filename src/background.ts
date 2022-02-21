@@ -10,7 +10,9 @@ import {
 } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 
-import { clearBeforeQuit, register, registerOnWin } from '@/api-main';
+import { register, registerOnBW } from '@/api-main';
+import { v2rayClose } from '@/api/v2ray';
+import { unsetSystemProxy } from '@/api/proxy';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
@@ -68,7 +70,7 @@ async function createWindow() {
   );
 
   // register API
-  registerOnWin(win);
+  registerOnBW(win);
 
   if (process.platform === 'win32') {
     win.setIcon(path.join(__static, 'appIcon/icon.iconset/icon_512x512.png'));
@@ -129,7 +131,8 @@ app.on('ready', async () => {
 });
 
 app.on('before-quit', () => {
-  clearBeforeQuit();
+  v2rayClose();
+  unsetSystemProxy();
 });
 
 // Exit cleanly on request from parent process in development mode.

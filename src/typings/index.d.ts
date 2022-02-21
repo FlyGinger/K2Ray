@@ -36,5 +36,7 @@ interface K2Ray {
 interface State {
   groups: Group[],
   routing: Routing,
-  k2ray: K2Ray
+  k2ray: K2Ray,
+  v2rayOn: boolean,
+  proxyOn: boolean,
 }

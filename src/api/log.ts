@@ -12,10 +12,10 @@ function log(info: unknown): void {
   logHandler(info);
 }
 
-function registerLog(win: BrowserWindow): void {
+function registerLogOnBW(win: BrowserWindow): void {
   logHandler = (info: unknown): void => {
     win.webContents.send('console-log', info);
   };
 }
 
-export { log, registerLog };
+export { log, registerLogOnBW };

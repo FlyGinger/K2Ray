@@ -1,6 +1,6 @@
 /* eslint-disable */
 
-const { contextBridge, ipcRenderer } = require('electron');
+const {contextBridge, ipcRenderer} = require('electron');
 
 // Expose protected methods that allow the renderer process to use
 // the ipcRenderer without exposing the entire object
@@ -15,14 +15,14 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   invoke: (channel, func) => {
-    const validChannels = ['get-path', 'load-config'];
+    const validChannels = ['get-path', 'load-config', 'v2ray-on', 'proxy-on'];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, func);
     }
   },
 
   receive: (channel, func) => {
-    const validChannels = ['main-is-ready', 'v2ray-state', 'console-log'];
+    const validChannels = ['main-is-ready', 'console-log'];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
       ipcRenderer.on(channel, (event, ...args) => func(...args));

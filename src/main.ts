@@ -3,6 +3,8 @@
 Although it's called main.
  */
 
+import { proxyOn, v2rayOn } from '@/api-renderer';
+
 import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
@@ -21,16 +23,15 @@ window.api.receive('main-is-ready', () => {
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-window.api.receive('v2ray-state', (v2rayOn) => {
-  store.commit('setV2RayState', v2rayOn);
-});
-
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 window.api.receive('console-log', (info) => {
   // eslint-disable-next-line no-console
   console.log(info);
 });
+
+setInterval((): void => {
+  v2rayOn();
+  proxyOn(store.state.k2ray.inbound);
+}, 200);
 
 new Vue({
   router,

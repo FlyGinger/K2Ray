@@ -1,3 +1,7 @@
+/*
+This file provides functions to update and parse data from subscribe.
+ */
+
 // parser for trojan server
 // format: trojan://password@address:port#name
 function parseTrojan(raw: string): Server {

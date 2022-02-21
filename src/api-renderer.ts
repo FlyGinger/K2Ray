@@ -1,7 +1,9 @@
-function debugSignal(): void {
+import { store } from '@/store';
+
+function writeClipboard(data: string): void {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  window.api.send('main-debug');
+  window.api.send('write-clipboard', data);
 }
 
 function getPath(): Promise<string | null> {
@@ -34,12 +36,6 @@ function unsetSystemProxy(): void {
   window.api.send('unset-proxy');
 }
 
-function writeClipboard(data: string): void {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  window.api.send('write-clipboard', data);
-}
-
 function v2rayClose(): void {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -58,8 +54,28 @@ function v2rayRelaunch(state: State): void {
   window.api.send('v2ray-relaunch', state);
 }
 
+function v2rayOn(): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.api.invoke('v2ray-on')
+    .then((on: boolean) => store.commit('setV2RayOn', on));
+}
+
+function proxyOn(port: unknown): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.api.invoke('proxy-on', port)
+    .then((on: boolean) => store.commit('setProxyOn', on));
+}
+
+function debugSignal(): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.api.send('main-debug');
+}
+
 // eslint-disable-next-line import/prefer-default-export
 export {
   debugSignal, getPath, openFile, setSystemProxy, unsetSystemProxy,
-  v2rayClose, v2rayLaunch, v2rayRelaunch, writeClipboard,
+  v2rayClose, v2rayLaunch, v2rayRelaunch, writeClipboard, v2rayOn, proxyOn,
 };

@@ -30,6 +30,7 @@ const store = new Vuex.Store({
       server: null as Server | null,
     } as K2Ray,
     v2rayOn: false,
+    proxyOn: false,
   },
 
   mutations: {
@@ -67,8 +68,12 @@ const store = new Vuex.Store({
       saveConfig(state);
     },
 
-    setV2RayState(state, v2rayOn) {
+    setV2RayOn(state, v2rayOn) {
       Vue.set(state, 'v2rayOn', v2rayOn);
+    },
+
+    setProxyOn(state, proxyOn) {
+      Vue.set(state, 'proxyOn', proxyOn);
     },
 
     addGroup(state, group) {
