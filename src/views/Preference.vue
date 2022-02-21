@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { getPath } from '@/api/render';
+import { getPath } from '@/api-renderer';
 
 export default {
   data: (): unknown => ({

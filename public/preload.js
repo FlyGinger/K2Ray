@@ -7,7 +7,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
   send: (channel, data) => {
     // whitelist channels
-    const validChannels = ['open-file', 'save-config', 'set-proxy', 'unset-proxy',
+    const validChannels = ['main-debug', 'open-file', 'save-config', 'set-proxy', 'unset-proxy',
       'v2ray-close', 'v2ray-launch', 'v2ray-relaunch', 'write-clipboard'];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
@@ -22,7 +22,7 @@ contextBridge.exposeInMainWorld('api', {
   },
 
   receive: (channel, func) => {
-    const validChannels = ['main-is-ready', 'v2ray-state'];
+    const validChannels = ['main-is-ready', 'v2ray-state', 'console-log'];
     if (validChannels.includes(channel)) {
       // Deliberately strip event as it includes `sender`
       ipcRenderer.on(channel, (event, ...args) => func(...args));

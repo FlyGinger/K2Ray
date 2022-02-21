@@ -68,6 +68,13 @@
       <v-card-subtitle>{{ serverToUse }}</v-card-subtitle>
     </v-card>
 
+    <v-card class="mt-2" flat outlined tile>
+      <v-card-title>Debug</v-card-title>
+      <v-card-text>
+        <v-btn class="ma-1" @click="sendDebugSignal" small>debug</v-btn>
+      </v-card-text>
+    </v-card>
+
     <SuccessSnackbar :control="successSnackbar"></SuccessSnackbar>
   </div>
 </template>
@@ -75,13 +82,14 @@
 <script lang="ts">
 import path from 'path';
 import {
+  debugSignal,
   openFile,
   setSystemProxy,
   unsetSystemProxy,
   v2rayClose,
   v2rayLaunch,
   v2rayRelaunch,
-} from '@/api/render';
+} from '@/api-renderer';
 import SuccessSnackbar from '@/components/SuccessSnackbar.vue';
 
 export default {
@@ -110,6 +118,11 @@ export default {
   },
 
   methods: {
+    sendDebugSignal(): void {
+      console.log('click');
+      debugSignal();
+    },
+
     setSystemProxy(): void {
       setSystemProxy({
         socks: this.$store.state.k2ray.inbound.socks,

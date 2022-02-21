@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts">
-import { writeClipboard } from '@/api/render';
+import { writeClipboard } from '@/api-renderer';
 import ConfirmDialog from '@/components/ConfirmDialog.vue';
 import SuccessSnackbar from '@/components/SuccessSnackbar.vue';
 

@@ -1,3 +1,9 @@
+function debugSignal(): void {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  window.api.send('main-debug');
+}
+
 function getPath(): Promise<string | null> {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
@@ -54,6 +60,6 @@ function v2rayRelaunch(state: State): void {
 
 // eslint-disable-next-line import/prefer-default-export
 export {
-  getPath, openFile, setSystemProxy, unsetSystemProxy,
+  debugSignal, getPath, openFile, setSystemProxy, unsetSystemProxy,
   v2rayClose, v2rayLaunch, v2rayRelaunch, writeClipboard,
 };

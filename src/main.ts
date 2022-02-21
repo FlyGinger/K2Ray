@@ -1,3 +1,8 @@
+/*
+-> RENDERER
+Although it's called main.
+ */
+
 import Vue from 'vue';
 import App from './App.vue';
 import router from './router';
@@ -18,6 +23,13 @@ window.api.receive('main-is-ready', () => {
 // @ts-ignore
 window.api.receive('v2ray-state', (v2rayOn) => {
   store.commit('setV2RayState', v2rayOn);
+});
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+window.api.receive('console-log', (info) => {
+  // eslint-disable-next-line no-console
+  console.log(info);
 });
 
 new Vue({

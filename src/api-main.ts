@@ -6,6 +6,9 @@ import {
 } from 'electron';
 import Store from 'electron-store';
 
+import { log, registerLog } from '@/api/log';
+import { checkSystemProxy } from '@/api/proxy';
+
 function registerClipboardAPI(): void {
   // write string to clipboard
   ipcMain.on('write-clipboard', (event, data) => clipboard.writeText(data));
@@ -281,11 +284,17 @@ function registerV2RayAPI(win: BrowserWindow): void {
 
 function registerOnWin(win: BrowserWindow): void {
   registerV2RayAPI(win);
+  registerLog(win);
 }
 
 function clearBeforeQuit(): void {
   unsetSystemProxy();
   v2rayClose();
 }
+
+ipcMain.on('main-debug', (event) => {
+  log('haha');
+  checkSystemProxy({ http: 1, socks: 2 });
+});
 
 export { clearBeforeQuit, register, registerOnWin };

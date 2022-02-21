@@ -1,3 +1,8 @@
+/*
+-> MAIN
+Although it's called background.
+ */
+
 import path from 'path';
 
 import {
@@ -5,7 +10,7 @@ import {
 } from 'electron';
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib';
 
-import { clearBeforeQuit, register, registerOnWin } from '@/api/register';
+import { clearBeforeQuit, register, registerOnWin } from '@/api-main';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
