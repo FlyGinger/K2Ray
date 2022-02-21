@@ -45,12 +45,12 @@ function parseScutilOutput(str: string): SystemProxy {
 }
 
 // Return true if system proxy is set.
+// Always return false on unsupported platform.
 function checkSystemProxy(port: { socks: number, http: number }): boolean {
   if (process.platform === 'darwin') {
     const raw = execSync('scutil --proxy');
     const str = new TextDecoder().decode(raw);
     const config = parseScutilOutput(str);
-    log(config);
     return config.HTTPEnable && config.HTTPPort === port.http && config.HTTPProxy === '127.0.0.1'
       && config.HTTPSEnable && config.HTTPSPort === port.http && config.HTTPSProxy === '127.0.0.1'
       && config.SOCKSEnable && config.SOCKSPort === port.socks && config.SOCKSProxy === '127.0.0.1';
@@ -60,9 +60,8 @@ function checkSystemProxy(port: { socks: number, http: number }): boolean {
     const raw2 = execSync('reg query "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings" /v ProxyServer');
     const str1 = new TextDecoder().decode(raw1);
     const str2 = new TextDecoder().decode(raw2);
-    const enable = Number(str1.trim().split(/\s/)[-1]) === 1;
-    const server = str2.trim().split(/\s/)[-1];
-    log([raw1, raw2, str1, str2, enable, server]);
+    const enable = Number(str1.trim().split(/\s/).pop()) === 1;
+    const server = str2.trim().split(/\s/).pop();
     return enable && server === `127.0.0.1:${port.http}`;
   }
   return false;
