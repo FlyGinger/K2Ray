@@ -22,5 +22,6 @@ export default defineConfig({
     sourcemap: !!process.env.TAURI_DEBUG,
   },
 
+  // vite 配置
   plugins: [vue()]
 })
