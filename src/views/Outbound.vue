@@ -2,5 +2,5 @@
 </script>
 
 <template>
-    <div>关于</div>
+  <div>出站</div>
 </template>

@@ -2,5 +2,5 @@
 </script>
 
 <template>
-    <div>日志</div>
+  <div>路由</div>
 </template>

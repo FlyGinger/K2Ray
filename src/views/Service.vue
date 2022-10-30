@@ -2,5 +2,5 @@
 </script>
 
 <template>
-    <div>路由</div>
+  <div>服务</div>
 </template>

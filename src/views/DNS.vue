@@ -2,5 +2,5 @@
 </script>
 
 <template>
-    <div>服务</div>
+  <div>DNS</div>
 </template>

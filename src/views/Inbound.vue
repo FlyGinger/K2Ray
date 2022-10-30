@@ -2,5 +2,5 @@
 </script>
 
 <template>
-    <div>出站</div>
+  <div>入站</div>
 </template>
