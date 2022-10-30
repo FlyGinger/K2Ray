@@ -1,48 +1,31 @@
+<script setup lang="ts">
+// This starter template is using Vue 3 <script setup> SFCs
+// Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
+import HelloWorld from './components/HelloWorld.vue'
+</script>
+
 <template>
-  <v-app>
-    <v-navigation-drawer app permanent width="160px">
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class='text-h6'>K2Ray</v-list-item-title>
-          <v-list-item-subtitle>A GUI for V2Ray.</v-list-item-subtitle>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-divider></v-divider>
-
-      <v-list dense nav>
-        <v-list-item v-for='page in pages' :key='page.title' :to='page.path'>
-          <v-list-item-content>
-            <v-list-item-title>{{ page.title }}</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-
-    <v-main>
-      <router-view></router-view>
-    </v-main>
-  </v-app>
+  <div>
+    <a href="https://vitejs.dev" target="_blank">
+      <img src="/vite.svg" class="logo" alt="Vite logo" />
+    </a>
+    <a href="https://vuejs.org/" target="_blank">
+      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
+    </a>
+  </div>
+  <HelloWorld msg="Vite + Vue" />
 </template>
 
-<script lang="ts">
-export default {
-  name: 'App',
-
-  data: (): unknown => ({
-    pages: [
-      { title: '控制台', path: '/' },
-      { title: '服务器', path: '/groupList' },
-      { title: '路由', path: '/routing' },
-      { title: '偏好', path: '/preference' },
-      { title: '关于', path: '/about' },
-    ],
-  }),
-
-  mounted: (): void => {
-    // Window's title is set up by `htmlWebpackPlugin.options.title`
-    // in index.html, I don't know how to modify it, so do it now.
-    document.title = 'K2Ray';
-  },
-};
-</script>
+<style scoped>
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.vue:hover {
+  filter: drop-shadow(0 0 2em #42b883aa);
+}
+</style>
