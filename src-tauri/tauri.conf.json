@@ -16,7 +16,36 @@
       "iconAsTemplate": true
     },
     "allowlist": {
-      "all": true
+      "os": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "execute": true,
+        "open": false,
+        "scope": [
+          {
+            "name": "check-system-proxy-darwin",
+            "cmd": "scutil",
+            "args": [
+              "--proxy"
+            ]
+          },
+          {
+            "name": "check-system-proxy-win32",
+            "cmd": "reg",
+            "args": [
+              "query",
+              "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\"",
+              "/v",
+              {
+                "validator": "Proxy(Enable|Server)"
+              }
+            ]
+          }
+        ],
+        "sidecar": false
+      }
     },
     "bundle": {
       "active": true,

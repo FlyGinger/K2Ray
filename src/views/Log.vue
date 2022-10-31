@@ -65,7 +65,7 @@ const store = useStore();
       <!-- 日志 -->
       <Transition>
         <n-card v-if="logConfig.displayNumberLine > 0" title="日志" style="margin-top: 10px;">
-          <n-log :lines="store.v2ray_access_log" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />
+          <n-log :lines="store.v2rayAccessLog" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />
         </n-card>
       </Transition>
 

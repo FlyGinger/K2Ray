@@ -32,7 +32,11 @@ fn _is_v2ray_alive(p: &mut Child) -> bool {
 #[tauri::command]
 pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
-    _is_v2ray_alive(v2ray_process.as_mut().unwrap())
+    if v2ray_process.is_none() {
+        return false;
+    } else {
+        _is_v2ray_alive(v2ray_process.as_mut().unwrap())
+    }
 }
 
 #[tauri::command]
@@ -45,7 +49,7 @@ pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
     }
 
     // 没有进程，或者已有进程已经停止，则新开进程
-    let cmd = Command::new("")
+    let cmd = Command::new("/Users/zenk/Applications/V2Ray/v2ray")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();

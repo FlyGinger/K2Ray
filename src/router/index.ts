@@ -6,7 +6,11 @@ import {
 const routes = [
   {
     path: '/',
-    redirect: 'console',
+    redirect: '/dashboard',
+  },
+  {
+    path: '/dashboard',
+    component: () => import('../views/Dashboard.vue'),
   },
   {
     path: '/console',

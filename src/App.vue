@@ -21,6 +21,7 @@ import {
 export default {
   data: () => ({
     pages: [
+      { title: '仪表盘', path: '/dashboard' },
       { title: '控制台', path: '/console' },
       { title: '日志', path: '/log' },
       { title: 'DNS', path: '/dns' },
