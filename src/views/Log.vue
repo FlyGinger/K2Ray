@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useStore } from '../store';
 import {
   FormInst,
   NButton,
@@ -31,7 +32,7 @@ const logConfig = ref({
   logFilePath: null,
   displayNumberLine: 0
 })
-const logContent = ["111", "222", "333"]
+const store = useStore();
 </script>
 
 <template>
@@ -64,7 +65,7 @@ const logContent = ["111", "222", "333"]
       <!-- 日志 -->
       <Transition>
         <n-card v-if="logConfig.displayNumberLine > 0" title="日志" style="margin-top: 10px;">
-          <n-log :lines="logContent" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />
+          <n-log :lines="store.v2ray_access_log" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />
         </n-card>
       </Transition>
 
