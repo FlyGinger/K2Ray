@@ -1,9 +1,9 @@
 import { defineStore } from 'pinia'
+import { listen } from '@tauri-apps/api/event'
 
 export const useStore = defineStore('main', {
     state: () => ({
         // V2Ray process state
-        v2ray_id: 63814,
         v2ray_on: false,
     }),
 
@@ -17,3 +17,11 @@ export const useStore = defineStore('main', {
         }
     }
 })
+
+await listen<string>('send_access_log', (event) => {
+    console.log(event);
+});
+
+await listen<string>('send_error_log', (event) => {
+    console.log(event);
+});

@@ -11,20 +11,14 @@ import {
 } from "naive-ui"
 
 const store = useStore();
-const v2rayHeartbeat = new Promise(() => {
-  setInterval(
-    () => {
-      invoke("get_v2ray_on").then(
-        (v) => { store.update({ v2ray_on: v }) },
-        (v) => { store.update({ v2ray_on: v }) })
-    },
-    3000
-  )
-})
-</script>
 
-<script lang="ts">
+function runV2Ray() {
+  invoke("run_v2ray").then((res) => console.log(res))
+}
 
+function stopV2Ray() {
+  invoke("stop_v2ray").then((res) => console.log(res))
+}
 </script>
 
 <template>
@@ -39,7 +33,7 @@ const v2rayHeartbeat = new Promise(() => {
         <template #action>
           <n-space>
             <n-button tertiary>开启</n-button>
-            <n-button tertiary>关闭 {{ store.getter_v2ray_on() }}</n-button>
+            <n-button tertiary>关闭</n-button>
           </n-space>
         </template>
       </n-card>
@@ -54,9 +48,9 @@ const v2rayHeartbeat = new Promise(() => {
         <p>SOCKS 端口：8889</p>
         <template #action>
           <n-space>
-            <n-button tertiary>开启</n-button>
+            <n-button tertiary @click="runV2Ray">开启</n-button>
             <n-button tertiary>重启</n-button>
-            <n-button tertiary>关闭</n-button>
+            <n-button tertiary @click="stopV2Ray">关闭</n-button>
           </n-space>
         </template>
       </n-card>
