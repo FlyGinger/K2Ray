@@ -1,6 +1,20 @@
 <script setup lang="ts">
-import { NButton, NConfigProvider, NDivider, NGradientText, NGrid, NGi, NH1, NImage, NLayout, NLayoutHeader, NLayoutSider, NLayoutContent, NText } from "naive-ui";
 import router from './router/index'
+import {
+  NButton,
+  NConfigProvider,
+  NDivider,
+  NGradientText,
+  NGrid,
+  NGi,
+  NH1,
+  NImage,
+  NLayout,
+  NLayoutHeader,
+  NLayoutSider,
+  NLayoutContent,
+  NText
+} from "naive-ui";
 </script>
 
 <script lang="ts">
@@ -27,7 +41,7 @@ const themeOverrides = {
     "primaryColorSuppl": "#7DB9DEFF"
   },
   "Card": {
-    "actionColor": "rgba(255, 255, 255, 1)"
+    "actionColor": "#FFFFFFFF"
   }
 };
 </script>

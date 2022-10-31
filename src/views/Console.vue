@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { invoke } from '@tauri-apps/api';
+import { useStore } from '../store/index';
 import {
   NBadge,
   NButton,
@@ -7,6 +9,22 @@ import {
   NLayoutContent,
   NSpace
 } from "naive-ui"
+
+const store = useStore();
+const v2rayHeartbeat = new Promise(() => {
+  setInterval(
+    () => {
+      invoke("get_v2ray_on").then(
+        (v) => { store.update({ v2ray_on: v }) },
+        (v) => { store.update({ v2ray_on: v }) })
+    },
+    3000
+  )
+})
+</script>
+
+<script lang="ts">
+
 </script>
 
 <template>
@@ -21,7 +39,7 @@ import {
         <template #action>
           <n-space>
             <n-button tertiary>开启</n-button>
-            <n-button tertiary>关闭</n-button>
+            <n-button tertiary>关闭 {{ store.getter_v2ray_on() }}</n-button>
           </n-space>
         </template>
       </n-card>

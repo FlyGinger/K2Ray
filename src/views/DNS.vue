@@ -1,6 +1,20 @@
 <script setup lang="ts">
+import {
+  NCard,
+  NLayout,
+  NLayoutContent
+} from "naive-ui"
 </script>
 
 <template>
-  <div>DNS</div>
+  <n-layout>
+    <n-layout-content content-style="margin: 10px;">
+
+      <!-- placeholder -->
+      <n-card title="DNS，稍晚推出">
+        总之别急。
+      </n-card>
+
+    </n-layout-content>
+  </n-layout>
 </template>
