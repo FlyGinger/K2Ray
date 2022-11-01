@@ -2,6 +2,21 @@ import { defineStore } from 'pinia'
 import { invoke, os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
 import { listen } from '@tauri-apps/api/event'
+import { Store } from 'tauri-plugin-store-api'
+
+export interface Server {
+  name: string
+  address: string
+  port: number
+  password: string
+  protocol: string
+}
+export interface ServerGroup {
+  name: string
+  isSubscribe: boolean
+  subscribeURL: string
+  servers: Map<string, Server>
+}
 
 export const useStore = defineStore('main', {
   state: () => ({
@@ -10,12 +25,18 @@ export const useStore = defineStore('main', {
     v2rayOn: false, // runtime
 
     // console
-    v2rayPath: '',
+    v2rayFolderLocation: '',
 
     // server
+    currentServerGroupTabName: '', // runtime
     currentServer: {
-      name: 'hahaha'
-    }, // runtime
+      name: '',
+      address: '',
+      port: 0,
+      password: '',
+      protocol: ''
+    } as Server,
+    serverGroups: new Map<string, ServerGroup>(),
 
     // log
     v2rayLogSize: 200,
@@ -38,8 +59,27 @@ export const useStore = defineStore('main', {
   }),
 
   actions: {
-    update(obj: Object) {
+    async update(obj: object) {
       this.$patch(obj)
+      Object.entries(obj).forEach(async ([k, v]) => {
+        await persist.set(k, v)
+      })
+      await persist.save()
+    },
+
+    async addServerGroup(obj: ServerGroup) {
+      store.serverGroups.set(obj.name, obj)
+      const serverGroups: { [key: string]: object } = {}
+      store.serverGroups.forEach((v, k) => {
+        serverGroups[k] = {
+          name: v.name,
+          isSubscribe: v.isSubscribe,
+          subscribeURL: v.subscribeURL,
+          servers: Object.fromEntries(v.servers.entries())
+        }
+      })
+      await persist.set('serverGroups', serverGroups)
+      await persist.save()
     },
 
     pushAccessLog(log: number[]) {
@@ -76,7 +116,53 @@ export const useStore = defineStore('main', {
   }
 })
 
+/* -------- persist storage -------- */
+
 const store = useStore()
+const persist = new Store('config.json')
+
+async function loadPersistStorage() {
+  await persist.load()
+  const entries = await persist.entries()
+
+  if (entries.length == 0) {
+    // first start, create default config
+    await persist.set('v2rayFolderLocation', store.v2rayFolderLocation)
+    await persist.set('currentServer', store.currentServer)
+    await persist.save()
+  } else {
+    entries.forEach(([k, v]) => {
+      if (k === 'serverGroups') {
+        const serverGroups = new Map<string, ServerGroup>()
+        // @ts-ignore
+        Object.entries(v).forEach(([k, v]) => {
+          serverGroups.set(k, {
+            // @ts-ignore
+            name: v.name,
+            // @ts-ignore
+            isSubscribe: v.isSubscribe,
+            // @ts-ignore
+            subscribeURL: v.subscribeURL,
+            // @ts-ignore
+            servers: new Map(Object.entries(v.servers))
+          })
+        })
+        store[k] = serverGroups
+      } else {
+        // $patch does not work, why?
+        // @ts-ignore
+        store[k] = v
+      }
+    })
+  }
+
+  // initialize
+  if (store.serverGroups.size > 0) {
+    const keys = Array.from(store.serverGroups.keys())
+    store.currentServerGroupTabName = keys[0]
+  }
+}
+loadPersistStorage()
 
 /* -------- dashboard -------- */
 

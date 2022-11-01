@@ -1,5 +1,6 @@
 use std::{
     io::{BufReader, Read},
+    path::Path,
     process::{Child, Command, Stdio},
     sync::{
         mpsc::{channel, Sender, TryRecvError::Disconnected},
@@ -40,7 +41,10 @@ pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
 }
 
 #[tauri::command]
-pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
+pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window, location: String) -> bool {
+    let v2ray_folder_location = Path::new(&location);
+    let v2ray_location = v2ray_folder_location.join("v2ray");
+
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
 
     // if process does exist, check whether it has exited
@@ -49,7 +53,7 @@ pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
     }
 
     // if there is no process or previous process has exited, launch new one
-    let cmd = Command::new("/Users/zenk/Applications/V2Ray/v2ray")
+    let cmd = Command::new(v2ray_location.to_str().unwrap())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();

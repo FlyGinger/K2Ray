@@ -21,6 +21,10 @@ const routes = [
     component: () => import('../views/Server.vue'),
   },
   {
+    path: '/server_group',
+    component: () => import('../views/ServerGroup.vue'),
+  },
+  {
     path: '/log',
     component: () => import('../views/Log.vue'),
   },

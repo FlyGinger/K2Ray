@@ -13,6 +13,7 @@ import {
   NLayoutHeader,
   NLayoutSider,
   NLayoutContent,
+  NMessageProvider,
   NText
 } from 'naive-ui'
 </script>
@@ -51,51 +52,53 @@ const themeOverrides = {
 <template>
   <!-- wrapper of main window, providing global config sucn as naive-ui style -->
   <n-config-provider :theme-overrides="themeOverrides" style="height: 100%;">
+    <n-message-provider>
 
-    <!-- main window -->
-    <n-layout has-sider position="absolute">
+      <!-- main window -->
+      <n-layout has-sider position="absolute">
 
-      <!-- side bar -->
-      <n-layout-sider bordered native-scrollbar width=160>
+        <!-- side bar -->
+        <n-layout-sider bordered native-scrollbar width=160>
 
-        <!-- header of side bar -->
-        <n-layout-header style="padding-top: 10px; padding-bottom: 10px;">
-          <n-grid cols=4>
-            <n-gi span=1>
-              <n-image width=30 src="logo.png" style="padding: 9px;" />
-            </n-gi>
-            <n-gi span=3>
-              <n-h1 style="margin: 0px;">
-                <n-gradient-text :gradient='{
-                  deg: 90,
-                  from: "rgb(125,185,222)",
-                  to: "rgb(160,230,255)"
-                }'>
-                  K2Ray
-                </n-gradient-text>
-              </n-h1>
-            </n-gi>
-          </n-grid>
-        </n-layout-header>
+          <!-- header of side bar -->
+          <n-layout-header style="padding-top: 10px; padding-bottom: 10px;">
+            <n-grid cols=4>
+              <n-gi span=1>
+                <n-image width=30 src="logo.png" style="padding: 9px;" />
+              </n-gi>
+              <n-gi span=3>
+                <n-h1 style="margin: 0px;">
+                  <n-gradient-text :gradient='{
+                    deg: 90,
+                    from: "rgb(125,185,222)",
+                    to: "rgb(160,230,255)"
+                  }'>
+                    K2Ray
+                  </n-gradient-text>
+                </n-h1>
+              </n-gi>
+            </n-grid>
+          </n-layout-header>
 
-        <n-divider dashed style="margin-top: 0; margin-bottom: 10px;" />
+          <n-divider dashed style="margin-top: 0; margin-bottom: 10px;" />
 
-        <!-- body of side bar -->
-        <n-layout-content v-for="page in pages">
-          <n-button quaternary size="large" @click="router.push(page.path)">
-            <n-text strong>{{ page.title }}</n-text>
-          </n-button>
+          <!-- body of side bar -->
+          <n-layout-content v-for="page in pages">
+            <n-button quaternary size="large" @click="router.push(page.path)">
+              <n-text strong>{{ page.title }}</n-text>
+            </n-button>
+          </n-layout-content>
+
+        </n-layout-sider>
+
+        <!-- body of main window -->
+        <n-layout-content native-scrollbar>
+          <router-view />
         </n-layout-content>
 
-      </n-layout-sider>
+      </n-layout>
 
-      <!-- body of main window -->
-      <n-layout-content native-scrollbar>
-        <router-view />
-      </n-layout-content>
-
-    </n-layout>
-
+    </n-message-provider>
   </n-config-provider>
 </template>
 

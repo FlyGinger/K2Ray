@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { invoke, os } from '@tauri-apps/api'
-import { Command } from '@tauri-apps/api/shell';
+import { Command } from '@tauri-apps/api/shell'
 import { useStore } from '../store/index'
 import {
   NBadge,
@@ -94,12 +94,12 @@ async function clearSystemProxy() {
 // -------- v2ray state --------
 
 async function runV2Ray() {
-  await invoke('run_v2ray')
+  await invoke('run_v2ray', { 'location': store.v2rayFolderLocation })
 }
 
 async function stopAndRunV2Ray() {
-  await stopV2Ray()
-  await runV2Ray()
+  await invoke('stop_v2ray')
+  await invoke('run_v2ray', { 'location': store.v2rayFolderLocation })
 }
 
 async function stopV2Ray() {

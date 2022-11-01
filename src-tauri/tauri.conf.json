@@ -16,7 +16,26 @@
       "iconAsTemplate": true
     },
     "allowlist": {
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
+      "http": {
+        "all": false,
+        "request": true,
+        "scope": [
+          "http://**",
+          "https://**"
+        ]
+      },
       "os": {
+        "all": true
+      },
+      "path": {
         "all": true
       },
       "shell": {
