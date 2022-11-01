@@ -17,6 +17,10 @@ const routes = [
     component: () => import('../views/Console.vue'),
   },
   {
+    path: '/server',
+    component: () => import('../views/Server.vue'),
+  },
+  {
     path: '/log',
     component: () => import('../views/Log.vue'),
   },

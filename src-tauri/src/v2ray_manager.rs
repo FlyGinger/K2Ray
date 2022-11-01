@@ -43,33 +43,33 @@ pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
 pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
 
-    // 如果已有进程，还需检查是否已经停止
+    // if process does exist, check whether it has exited
     if v2ray_process.is_some() && _is_v2ray_alive(v2ray_process.as_mut().unwrap()) {
         return true;
     }
 
-    // 没有进程，或者已有进程已经停止，则新开进程
+    // if there is no process or previous process has exited, launch new one
     let cmd = Command::new("/Users/zenk/Applications/V2Ray/v2ray")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();
     match cmd {
         Ok(mut v) => {
-            // 获取标准输出和标准错误
+            // fetch stdout and stderr
             let out_pipe = v.stdout.take().unwrap();
             let err_pipe = v.stderr.take().unwrap();
             let mut out_pipe = BufReader::new(out_pipe);
             let mut err_pipe = BufReader::new(err_pipe);
 
-            // 保存关闭器
+            // save closer to tauri managed state
             let (sender, receiver) = channel::<bool>();
             state.log_emitter_closer.lock().unwrap().replace(sender);
 
-            // 开新线程
+            // create new thread to emit V2Ray log to frontend
             thread::spawn(move || {
                 let mut buffer = [0; 256];
                 loop {
-                    // 处理 access 日志
+                    // access log in stdout
                     if let Ok(v) = out_pipe.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_access_log", (buffer[0..v]).to_vec());
@@ -81,7 +81,7 @@ pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
                         break;
                     }
 
-                    // 处理 error 日志
+                    // error log in stderr
                     if let Ok(v) = err_pipe.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_error_log", (buffer[0..v]).to_vec());
@@ -93,7 +93,7 @@ pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
                         break;
                     }
 
-                    // 如果收到停止信号则停止
+                    // stop if a signal from main thread has been received
                     let signal = receiver.try_recv();
                     if let Ok(_) | Err(Disconnected) = signal {
                         break;
@@ -101,7 +101,7 @@ pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window) -> bool {
                 }
             });
 
-            // 记录下 V2Ray 的线程
+            // save V2Ray process handle to tauri managed state
             v2ray_process.replace(v);
             true
         }
@@ -114,7 +114,7 @@ pub fn stop_v2ray(state: tauri::State<V2RayManager>) -> bool {
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
     let mut log_emitter_closer = state.log_emitter_closer.lock().unwrap();
 
-    // 没有进程，或者已有进程已经停止，则无需处理
+    // if there is no process or previous process has exited, do (almost) nothing
     if v2ray_process.is_none() {
         return true;
     }
@@ -124,7 +124,7 @@ pub fn stop_v2ray(state: tauri::State<V2RayManager>) -> bool {
         return true;
     }
 
-    // 否则杀死进程
+    // if there is an active process, kill it
     let kill_result = v2ray_process.take().unwrap().kill();
     let send_result = log_emitter_closer.take().unwrap().send(true);
     match kill_result {

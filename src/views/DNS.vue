@@ -1,9 +1,9 @@
-<script setup lang="ts">
+<script setup lang='ts'>
 import {
   NCard,
   NLayout,
   NLayoutContent
-} from "naive-ui"
+} from 'naive-ui'
 </script>
 
 <template>

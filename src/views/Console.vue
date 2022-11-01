@@ -1,18 +1,18 @@
-<script setup lang="ts">
+<script setup lang='ts'>
 import {
   NButton,
   NCard,
   NLayout,
   NLayoutContent,
   NSpace
-} from "naive-ui"
+} from 'naive-ui'
 </script>
 
 <template>
   <n-layout>
     <n-layout-content content-style="margin: 10px;">
 
-      <!-- V2Ray 位置 -->
+      <!-- v2ray location -->
       <n-card title="V2Ray 位置">
         当前位置：xxxxxx
         <template #action>

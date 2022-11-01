@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang='ts'>
 import router from './router/index'
 import {
   NButton,
@@ -14,15 +14,16 @@ import {
   NLayoutSider,
   NLayoutContent,
   NText
-} from "naive-ui";
+} from 'naive-ui'
 </script>
 
-<script lang="ts">
+<script lang='ts'>
 export default {
   data: () => ({
     pages: [
       { title: '仪表盘', path: '/dashboard' },
       { title: '控制台', path: '/console' },
+      { title: '服务器', path: '/server' },
       { title: '日志', path: '/log' },
       { title: 'DNS', path: '/dns' },
       { title: '路由', path: '/route' },
@@ -32,32 +33,32 @@ export default {
       { title: '关于', path: '/about' },
     ]
   })
-};
+}
 
 const themeOverrides = {
-  "common": {
-    "primaryColor": "#6DA9CEFF",
-    "primaryColorHover": "#7DB9DEFF",
-    "primaryColorPressed": "#5D99BEFF",
-    "primaryColorSuppl": "#7DB9DEFF"
+  'common': {
+    'primaryColor': '#6DA9CEFF',
+    'primaryColorHover': '#7DB9DEFF',
+    'primaryColorPressed': '#5D99BEFF',
+    'primaryColorSuppl': '#7DB9DEFF'
   },
-  "Card": {
-    "actionColor": "#FFFFFFFF"
+  'Card': {
+    'actionColor': '#FFFFFFFF'
   }
-};
+}
 </script>
 
 <template>
-  <!-- 主窗口的 wrapper，提供 naive-ui 的样式等全局配置 -->
+  <!-- wrapper of main window, providing global config sucn as naive-ui style -->
   <n-config-provider :theme-overrides="themeOverrides" style="height: 100%;">
 
-    <!-- 主窗口 -->
+    <!-- main window -->
     <n-layout has-sider position="absolute">
 
-      <!-- 侧边栏 -->
+      <!-- side bar -->
       <n-layout-sider bordered native-scrollbar width=160>
 
-        <!-- 侧边栏页首 -->
+        <!-- header of side bar -->
         <n-layout-header style="padding-top: 10px; padding-bottom: 10px;">
           <n-grid cols=4>
             <n-gi span=1>
@@ -65,11 +66,11 @@ const themeOverrides = {
             </n-gi>
             <n-gi span=3>
               <n-h1 style="margin: 0px;">
-                <n-gradient-text :gradient="{
+                <n-gradient-text :gradient='{
                   deg: 90,
-                  from: 'rgb(125,185,222)',
-                  to: 'rgb(160,230,255)'
-                }">
+                  from: "rgb(125,185,222)",
+                  to: "rgb(160,230,255)"
+                }'>
                   K2Ray
                 </n-gradient-text>
               </n-h1>
@@ -79,7 +80,7 @@ const themeOverrides = {
 
         <n-divider dashed style="margin-top: 0; margin-bottom: 10px;" />
 
-        <!-- 侧边栏主体 -->
+        <!-- body of side bar -->
         <n-layout-content v-for="page in pages">
           <n-button quaternary size="large" @click="router.push(page.path)">
             <n-text strong>{{ page.title }}</n-text>
@@ -88,7 +89,7 @@ const themeOverrides = {
 
       </n-layout-sider>
 
-      <!-- 主窗口主体部分，利用 vue route 实现切换页面 -->
+      <!-- body of main window -->
       <n-layout-content native-scrollbar>
         <router-view />
       </n-layout-content>

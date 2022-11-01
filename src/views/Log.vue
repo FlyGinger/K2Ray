@@ -1,6 +1,6 @@
-<script setup lang="ts">
+<script setup lang='ts'>
 import { ref } from 'vue'
-import { useStore } from '../store';
+import { useStore } from '../store'
 import {
   FormInst,
   NButton,
@@ -15,7 +15,7 @@ import {
   NLog,
   NSelect,
   NSwitch
-} from "naive-ui"
+} from 'naive-ui'
 
 const logLevelOptions = [
   'Debug',
@@ -32,14 +32,14 @@ const logConfig = ref({
   logFilePath: null,
   displayNumberLine: 0
 })
-const store = useStore();
+const store = useStore()
 </script>
 
 <template>
   <n-layout>
     <n-layout-content content-style="margin: 10px;">
 
-      <!-- 设置 -->
+      <!-- preference -->
       <n-card title="设置">
         <n-form ref="formRef" :model="logConfig" label-placement="left" label-align="right" label-width="auto">
           <n-form-item label="日志等级" path="loglLevel">
@@ -62,7 +62,7 @@ const store = useStore();
         </n-form>
       </n-card>
 
-      <!-- 日志 -->
+      <!-- log -->
       <Transition>
         <n-card v-if="logConfig.displayNumberLine > 0" title="日志" style="margin-top: 10px;">
           <n-log :lines="store.v2rayAccessLog" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />

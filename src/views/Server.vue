@@ -2,5 +2,5 @@
 </script>
 
 <template>
-  <div>入站</div>
+  <div>服务器</div>
 </template>

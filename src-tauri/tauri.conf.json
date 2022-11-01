@@ -25,23 +25,23 @@
         "open": false,
         "scope": [
           {
-            "name": "check-system-proxy-darwin",
-            "cmd": "scutil",
-            "args": [
-              "--proxy"
-            ]
+            "name": "darwin-ifconfig",
+            "cmd": "ifconfig"
           },
           {
-            "name": "check-system-proxy-win32",
+            "name": "darwin-networksetup",
+            "cmd": "networksetup",
+            "args": true
+          },
+          {
+            "name": "darwin-scutil",
+            "cmd": "scutil",
+            "args": true
+          },
+          {
+            "name": "win32-reg",
             "cmd": "reg",
-            "args": [
-              "query",
-              "\"HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\"",
-              "/v",
-              {
-                "validator": "Proxy(Enable|Server)"
-              }
-            ]
+            "args": true
           }
         ],
         "sidecar": false
