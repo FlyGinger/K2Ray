@@ -15,7 +15,7 @@ export interface ServerGroup {
   name: string
   isSubscribe: boolean
   subscribeURL: string
-  servers: Map<string, Server>
+  servers: Server[]
 }
 
 export const useStore = defineStore('main', {
@@ -36,7 +36,7 @@ export const useStore = defineStore('main', {
       password: '',
       protocol: ''
     } as Server,
-    serverGroups: new Map<string, ServerGroup>(),
+    serverGroups: [] as ServerGroup[],
 
     // log
     v2rayLogSize: 200,
@@ -58,6 +58,28 @@ export const useStore = defineStore('main', {
     // service
   }),
 
+  getters: {
+    currentServerGroupIndex: (state) => {
+      return state.serverGroups.findIndex((v) => v.name === state.currentServerGroupTabName)
+    },
+
+    currentServerGroup(): ServerGroup {
+      const index = this.currentServerGroupIndex
+      if (index < 0) {
+        return { name: '', isSubscribe: false, subscribeURL: '', servers: [] }
+      }
+      return this.serverGroups[index]
+    },
+
+    currentServerGroupIsSubscribe(): boolean {
+      const index = this.currentServerGroupIndex
+      if (index < 0) {
+        return false
+      }
+      return this.serverGroups[index].isSubscribe
+    }
+  },
+
   actions: {
     async update(obj: object) {
       this.$patch(obj)
@@ -68,18 +90,26 @@ export const useStore = defineStore('main', {
     },
 
     async addServerGroup(obj: ServerGroup) {
-      store.serverGroups.set(obj.name, obj)
-      const serverGroups: { [key: string]: object } = {}
-      store.serverGroups.forEach((v, k) => {
-        serverGroups[k] = {
-          name: v.name,
-          isSubscribe: v.isSubscribe,
-          subscribeURL: v.subscribeURL,
-          servers: Object.fromEntries(v.servers.entries())
-        }
-      })
-      await persist.set('serverGroups', serverGroups)
+      this.serverGroups.push(obj)
+      await persist.set('serverGroups', this.serverGroups)
       await persist.save()
+    },
+
+    async removeServerGroup() {
+      const index = this.currentServerGroupIndex
+      if (index < 0) {
+        return
+      }
+
+      this.serverGroups.splice(index, 1)
+
+      if (this.serverGroups.length == 0) {
+        this.currentServerGroupTabName = ''
+      } else if (index >= this.serverGroups.length) {
+        this.currentServerGroupTabName = this.serverGroups[this.serverGroups.length - 1].name
+      } else {
+        this.currentServerGroupTabName = this.serverGroups[index].name
+      }
     },
 
     pushAccessLog(log: number[]) {
@@ -132,34 +162,15 @@ async function loadPersistStorage() {
     await persist.save()
   } else {
     entries.forEach(([k, v]) => {
-      if (k === 'serverGroups') {
-        const serverGroups = new Map<string, ServerGroup>()
-        // @ts-ignore
-        Object.entries(v).forEach(([k, v]) => {
-          serverGroups.set(k, {
-            // @ts-ignore
-            name: v.name,
-            // @ts-ignore
-            isSubscribe: v.isSubscribe,
-            // @ts-ignore
-            subscribeURL: v.subscribeURL,
-            // @ts-ignore
-            servers: new Map(Object.entries(v.servers))
-          })
-        })
-        store[k] = serverGroups
-      } else {
-        // $patch does not work, why?
-        // @ts-ignore
-        store[k] = v
-      }
+      // $patch does not work, why?
+      // @ts-ignore
+      store[k] = v
     })
   }
 
   // initialize
-  if (store.serverGroups.size > 0) {
-    const keys = Array.from(store.serverGroups.keys())
-    store.currentServerGroupTabName = keys[0]
+  if (store.serverGroups.length > 0) {
+    store.currentServerGroupTabName = store.serverGroups[0].name
   }
 }
 loadPersistStorage()
