@@ -1,15 +1,9 @@
 <script setup lang='ts'>
 import { invoke, os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
+import { NBadge, NButton, NCard, NLayout, NLayoutContent, NSpace } from 'naive-ui'
 import { useStore } from '../store/index'
-import {
-  NBadge,
-  NButton,
-  NCard,
-  NLayout,
-  NLayoutContent,
-  NSpace
-} from 'naive-ui'
+import { startV2Ray, stopV2Ray, restartV2Ray } from '../utils/v2ray'
 
 const store = useStore()
 
@@ -90,21 +84,6 @@ async function clearSystemProxy() {
     await new Command('win32-reg', ['add', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings', '/v', 'ProxyEnable', '/t', 'REG_DWORD', '/d', '0', '/f']).execute()
   }
 }
-
-// -------- v2ray state --------
-
-async function runV2Ray() {
-  await invoke('run_v2ray', { 'location': store.v2rayFolderLocation })
-}
-
-async function stopAndRunV2Ray() {
-  await invoke('stop_v2ray')
-  await invoke('run_v2ray', { 'location': store.v2rayFolderLocation })
-}
-
-async function stopV2Ray() {
-  await invoke('stop_v2ray')
-}
 </script>
 
 <template>
@@ -136,8 +115,8 @@ async function stopV2Ray() {
         <p>SOCKS 端口：{{ store.socksPort }}</p>
         <template #action>
           <n-space>
-            <n-button tertiary @click="runV2Ray">开启</n-button>
-            <n-button tertiary @click="stopAndRunV2Ray">重启</n-button>
+            <n-button tertiary @click="startV2Ray(store.v2rayFolderLocation)">开启</n-button>
+            <n-button tertiary @click="restartV2Ray(store.v2rayFolderLocation)">重启</n-button>
             <n-button tertiary @click="stopV2Ray">关闭</n-button>
           </n-space>
         </template>

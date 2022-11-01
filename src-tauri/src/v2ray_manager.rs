@@ -41,7 +41,7 @@ pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
 }
 
 #[tauri::command]
-pub fn run_v2ray(state: tauri::State<V2RayManager>, window: Window, location: String) -> bool {
+pub fn start_v2ray(state: tauri::State<V2RayManager>, window: Window, location: String) -> bool {
     let v2ray_folder_location = Path::new(&location);
     let v2ray_location = v2ray_folder_location.join("v2ray");
 

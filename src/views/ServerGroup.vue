@@ -1,17 +1,5 @@
 <script setup lang='ts'>
-import {
-  FormInst,
-  NButton,
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NLayout,
-  NLayoutContent,
-  NSpace,
-  NSwitch,
-  useMessage
-} from 'naive-ui'
+import { FormInst, FormItemRule, NButton, NCard, NForm, NFormItem, NInput, NLayout, NLayoutContent, NSpace, NSwitch, useMessage } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { useStore, Server } from '../store/index'
 import router from '../router/index'
@@ -19,28 +7,31 @@ import { fetchServers } from '../utils/subscribe'
 
 const store = useStore()
 const message = useMessage()
+
 const formRef = ref<FormInst | null>(null)
 const serverGroup = ref({
   name: '',
   isSubscribe: false,
   subscribeURL: ''
 })
+const loading = ref(false)
+
+const modifyMode = router.currentRoute.value.query && router.currentRoute.value.query.modifyMode
 
 onMounted(() => {
-  if (router.currentRoute.value.query && router.currentRoute.value.query.modifyMode) {
-    let index = store.serverGroups.findIndex((v) => v.name === store.currentServerGroupTabName)
-    if (index < 0) {
-      return
-    }
-    serverGroup.value.name = store.serverGroups[index].name
-    serverGroup.value.isSubscribe = store.serverGroups[index].isSubscribe
-    serverGroup.value.subscribeURL = store.serverGroups[index].subscribeURL
+  if (modifyMode) {
+    serverGroup.value.name = store.serverGroups[store.currentServerGroupIndex].name
+    serverGroup.value.isSubscribe = store.serverGroups[store.currentServerGroupIndex].isSubscribe
+    serverGroup.value.subscribeURL = store.serverGroups[store.currentServerGroupIndex].subscribeURL
   }
 })
 
-const loading = ref(false)
-
 async function addServerGroup() {
+  if (serverGroup.value.name.length === 0) {
+    message.error('服务器组名称不可为空。')
+    return
+  }
+
   const index = store.serverGroups.findIndex((v) => v.name === serverGroup.value.name)
   if (index >= 0) {
     message.error('服务器组名称已经存在。')
@@ -59,16 +50,52 @@ async function addServerGroup() {
     fetchServers(serverGroup.value.subscribeURL).then((servers) => {
       loading.value = false
       sg.servers.push(...servers)
+      store.currentServerGroupIndex = store.serverGroups.length
       store.addServerGroup(sg)
-      store.currentServerGroupTabName = serverGroup.value.name
       router.push('/server')
     }).catch((err) => {
       loading.value = false
       message.error(err)
     })
   } else {
+    store.currentServerGroupIndex = store.serverGroups.length
     store.addServerGroup(sg)
-    store.currentServerGroupTabName = serverGroup.value.name
+    router.push('/server')
+  }
+}
+
+function updateServerGroup() {
+  if (serverGroup.value.name.length === 0) {
+    message.error('服务器组名称不可为空。')
+    return
+  }
+
+  const index = store.serverGroups.findIndex((v) => v.name === serverGroup.value.name)
+  if (index >= 0) {
+    message.error('服务器组名称已经存在。')
+    return
+  }
+
+  const sg = {
+    name: serverGroup.value.name,
+    isSubscribe: serverGroup.value.isSubscribe,
+    subscribeURL: serverGroup.value.subscribeURL,
+    servers: [] as Server[]
+  }
+
+  if (serverGroup.value.isSubscribe) {
+    loading.value = true
+    fetchServers(serverGroup.value.subscribeURL).then((servers) => {
+      loading.value = false
+      sg.servers.push(...servers)
+      store.updateServerGroup(sg)
+      router.push('/server')
+    }).catch((err) => {
+      loading.value = false
+      message.error(err)
+    })
+  } else {
+    store.updateServerGroup(sg)
     router.push('/server')
   }
 }
@@ -99,7 +126,8 @@ function cancel() {
         </n-form>
         <template #action>
           <n-space>
-            <n-button tertiary @click="addServerGroup" :loading="loading">添加</n-button>
+            <n-button v-if="modifyMode" tertiary @click="updateServerGroup" :loading="loading">修改</n-button>
+            <n-button v-else tertiary @click="addServerGroup" :loading="loading">添加</n-button>
             <n-button tertiary @click="cancel" :disabled="loading">取消</n-button>
           </n-space>
         </template>

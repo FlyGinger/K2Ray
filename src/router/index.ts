@@ -1,7 +1,4 @@
-import {
-  createRouter,
-  createWebHistory
-} from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
@@ -23,6 +20,10 @@ const routes = [
   {
     path: '/server_group',
     component: () => import('../views/ServerGroup.vue'),
+  },
+  {
+    path: '/single_server',
+    component: () => import('../views/SingleServer.vue'),
   },
   {
     path: '/log',

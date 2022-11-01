@@ -1,11 +1,5 @@
 <script setup lang='ts'>
-import {
-  NButton,
-  NCard,
-  NLayout,
-  NLayoutContent,
-  NSpace
-} from 'naive-ui'
+import { NButton, NCard, NLayout, NLayoutContent, NSpace } from 'naive-ui'
 import { useStore } from '../store/index'
 import { invoke } from '@tauri-apps/api'
 import { open } from '@tauri-apps/api/dialog'

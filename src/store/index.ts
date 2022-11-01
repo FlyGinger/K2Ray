@@ -3,6 +3,9 @@ import { invoke, os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
 import { listen } from '@tauri-apps/api/event'
 import { Store } from 'tauri-plugin-store-api'
+import { stopV2Ray, restartV2Ray } from '../utils/v2ray'
+
+const persist = new Store('config.json')
 
 export interface Server {
   name: string
@@ -28,14 +31,16 @@ export const useStore = defineStore('main', {
     v2rayFolderLocation: '',
 
     // server
-    currentServerGroupTabName: '', // runtime
+    currentServerGroupIndex: 0, // runtime
     currentServer: {
+      serverGroupIndex: 0,
+      serverIndex: 0,
       name: '',
       address: '',
       port: 0,
       password: '',
       protocol: ''
-    } as Server,
+    },
     serverGroups: [] as ServerGroup[],
 
     // log
@@ -58,35 +63,62 @@ export const useStore = defineStore('main', {
     // service
   }),
 
-  getters: {
-    currentServerGroupIndex: (state) => {
-      return state.serverGroups.findIndex((v) => v.name === state.currentServerGroupTabName)
-    },
-
-    currentServerGroup(): ServerGroup {
-      const index = this.currentServerGroupIndex
-      if (index < 0) {
-        return { name: '', isSubscribe: false, subscribeURL: '', servers: [] }
-      }
-      return this.serverGroups[index]
-    },
-
-    currentServerGroupIsSubscribe(): boolean {
-      const index = this.currentServerGroupIndex
-      if (index < 0) {
-        return false
-      }
-      return this.serverGroups[index].isSubscribe
-    }
-  },
-
   actions: {
+    async initialize() {
+      await persist.load()
+      const entries = await persist.entries()
+
+      if (entries.length == 0) {
+        // first start, create default config
+        await persist.set('v2rayFolderLocation', this.v2rayFolderLocation)
+        await persist.set('currentServer', this.currentServer)
+        await persist.set('serverGroups', this.serverGroups)
+        await persist.save()
+      } else {
+        entries.forEach(([k, v]) => {
+          // $patch does not work, why?
+          // @ts-ignore
+          store[k] = v
+        })
+      }
+    },
+
+    async setCurrentServer(serverGroupIndex: number, serverIndex: number, server: Server) {
+      this.currentServer.serverGroupIndex = serverGroupIndex
+      this.currentServer.serverIndex = serverIndex
+      this.currentServer.name = server.name
+      this.currentServer.address = server.address
+      this.currentServer.port = server.port
+      this.currentServer.password = server.password
+      this.currentServer.protocol = server.protocol
+
+      await persist.set('currentServer', this.currentServer)
+      await persist.save()
+    },
+
+    async clearCurrentServer() {
+      this.currentServer.serverGroupIndex = 0
+      this.currentServer.serverIndex = 0
+      this.currentServer.name = ''
+      this.currentServer.address = ''
+      this.currentServer.port = 0
+      this.currentServer.password = ''
+      this.currentServer.protocol = ''
+
+      await persist.set('currentServer', this.currentServer)
+      await persist.save()
+    },
+
     async update(obj: object) {
       this.$patch(obj)
       Object.entries(obj).forEach(async ([k, v]) => {
         await persist.set(k, v)
       })
       await persist.save()
+
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation)
+      }
     },
 
     async addServerGroup(obj: ServerGroup) {
@@ -96,20 +128,94 @@ export const useStore = defineStore('main', {
     },
 
     async removeServerGroup() {
-      const index = this.currentServerGroupIndex
-      if (index < 0) {
-        return
+      if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
+        this.clearCurrentServer()
+        stopV2Ray()
+      } else if (this.currentServer.serverGroupIndex > this.currentServerGroupIndex) {
+        this.currentServer.serverGroupIndex--
       }
 
-      this.serverGroups.splice(index, 1)
+      this.serverGroups.splice(this.currentServerGroupIndex, 1)
 
       if (this.serverGroups.length == 0) {
-        this.currentServerGroupTabName = ''
-      } else if (index >= this.serverGroups.length) {
-        this.currentServerGroupTabName = this.serverGroups[this.serverGroups.length - 1].name
-      } else {
-        this.currentServerGroupTabName = this.serverGroups[index].name
+        this.currentServerGroupIndex = 0
+      } else if (this.currentServerGroupIndex >= this.serverGroups.length) {
+        this.currentServerGroupIndex = this.serverGroups.length - 1
       }
+
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+    },
+
+    async updateServerGroup(obj: ServerGroup) {
+      this.serverGroups[this.currentServerGroupIndex] = obj
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+
+      if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
+        const index = obj.servers.findIndex((v) => v.name === this.currentServer.name)
+        if (index < 0) {
+          this.clearCurrentServer()
+          stopV2Ray()
+        } else {
+          this.setCurrentServer(this.currentServerGroupIndex, index, obj.servers[index])
+          restartV2Ray(this.v2rayFolderLocation)
+        }
+      }
+    },
+
+    async updateSubscribe(servers: Server[]) {
+      this.serverGroups[this.currentServerGroupIndex].servers = servers
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+
+      if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
+        const index = servers.findIndex((v) => v.name === this.currentServer.name)
+        if (index < 0) {
+          this.clearCurrentServer()
+          stopV2Ray()
+        } else {
+          this.setCurrentServer(this.currentServerGroupIndex, index, servers[index])
+          restartV2Ray(this.v2rayFolderLocation)
+        }
+      }
+    },
+
+    async addSingleServer(obj: Server) {
+      this.serverGroups[this.currentServerGroupIndex].servers.push(obj)
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+    },
+
+    async removeSingleServer(index: number) {
+      if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
+        if (this.currentServer.serverIndex === index) {
+          this.clearCurrentServer()
+          stopV2Ray()
+        } else if (this.currentServer.serverIndex > index) {
+          this.currentServer.serverIndex--
+        }
+      }
+
+      this.serverGroups[this.currentServerGroupIndex].servers.splice(index, 1)
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+    },
+
+    async updateSingleServer(index: number, obj: Server) {
+      this.serverGroups[this.currentServerGroupIndex].servers[index] = obj
+      await persist.set('serverGroups', this.serverGroups)
+      await persist.save()
+
+      if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex && this.currentServer.serverIndex === index) {
+        this.setCurrentServer(this.currentServerGroupIndex, index, obj)
+        restartV2Ray(this.v2rayFolderLocation)
+      }
+    },
+
+    async useSingleServer(index: number) {
+      this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
+      restartV2Ray(this.v2rayFolderLocation)
     },
 
     pushAccessLog(log: number[]) {
@@ -146,34 +252,10 @@ export const useStore = defineStore('main', {
   }
 })
 
-/* -------- persist storage -------- */
+/* -------- initialize -------- */
 
 const store = useStore()
-const persist = new Store('config.json')
-
-async function loadPersistStorage() {
-  await persist.load()
-  const entries = await persist.entries()
-
-  if (entries.length == 0) {
-    // first start, create default config
-    await persist.set('v2rayFolderLocation', store.v2rayFolderLocation)
-    await persist.set('currentServer', store.currentServer)
-    await persist.save()
-  } else {
-    entries.forEach(([k, v]) => {
-      // $patch does not work, why?
-      // @ts-ignore
-      store[k] = v
-    })
-  }
-
-  // initialize
-  if (store.serverGroups.length > 0) {
-    store.currentServerGroupTabName = store.serverGroups[0].name
-  }
-}
-loadPersistStorage()
+store.initialize()
 
 /* -------- dashboard -------- */
 
