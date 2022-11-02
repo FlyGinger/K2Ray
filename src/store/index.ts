@@ -427,14 +427,22 @@ listen<string>('send_error_log', (event) => {
 export function generateV2RayConfig(): string {
   const newConfig = {
     log: {
-      access: { Type: 'Console', Level: store.v2rayLogLevel },
-      error: { Type: 'Console', Level: store.v2rayLogLevel }
+      loglevel: store.v2rayLogLevel.toLowerCase()
     },
-    router: {
+    routing: {
       domainStrategy: store.domainStrategy,
+      domainMatcher: 'mph',
       rules: store.directChina ? [
-        { tag: 'direct', geoDomain: { code: 'cn' } },
-        { tag: 'direct', geoip: { code: 'cn' } }
+        {
+          type: 'field',
+          outboundTag: 'direct',
+          domains: 'geosite:cn'
+        },
+        {
+          type: 'field',
+          outboundTag: 'direct',
+          ip: 'geoip:cn'
+        }
       ] : []
     },
     inbounds: [
@@ -455,17 +463,19 @@ export function generateV2RayConfig(): string {
     ],
     outbounds: [
       {
-        protocol: store.currentServer.protocol,
-        settings: {
-          address: store.currentServer.address,
-          port: store.currentServer.port,
-          password: store.currentServer.password
-        },
         tag: 'proxy',
+        protocol: store.currentServer.protocol,
         streamSettings: {
-          transport: 'tcp',
-          security: 'tls',
-        }
+          network: 'tcp',
+          security: 'tls'
+        },
+        settings: {
+          servers: [{
+            address: store.currentServer.address,
+            port: store.currentServer.port,
+            password: store.currentServer.password,
+          }],
+        },
       },
       {
         protocol: 'freedom',
@@ -479,7 +489,7 @@ export function generateV2RayConfig(): string {
   }
   store.rules.forEach((v) => {
     // @ts-ignore
-    newConfig.router.rules.push({ tag: v.tag, domain: v.domain })
+    newConfig.routing.rules.push({ type: 'field', domains: `domain:${v.domain}`, outboundTag: v.tag })
   })
   return JSON.stringify(newConfig)
 }

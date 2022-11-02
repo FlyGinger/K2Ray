@@ -18,7 +18,7 @@ const currentPage = ref('access')
 const logType = [{ label: '访问日志', value: 'access' }, { label: '错误日志', value: 'error' }]
 
 function updateLogLevel(value: string) {
-  store.update({ v2rayLogLevel: value }, false)
+  store.update({ v2rayLogLevel: value }, true)
 }
 
 function updateLogSize(value: number | null) {

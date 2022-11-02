@@ -17,7 +17,7 @@ function checkUpdate() {
       <n-card title="K2Ray">
         <n-space vertical>
           <n-text>K2Ray 为 V2Ray 提供图形界面，并附带一些小功能。</n-text>
-          <n-text>当前版本：1.0.0</n-text>
+          <n-text>当前版本：0.5.0</n-text>
         </n-space>
         <template #action>
           <n-space>

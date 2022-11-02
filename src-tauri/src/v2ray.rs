@@ -71,6 +71,7 @@ pub fn start_v2ray(
 
     // if there is no process or previous process has exited, launch new one
     let cmd = Command::new(v2ray_location.to_str().unwrap())
+        .arg("run")
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn();
@@ -94,24 +95,16 @@ pub fn start_v2ray(
                     if let Ok(v) = out_pipe.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_access_log", (buffer[0..v]).to_vec());
-                            if let Err(_) = result {
-                                break;
-                            }
+                            if let Err(_) = result {}
                         }
-                    } else {
-                        break;
                     }
 
                     // error log in stderr
                     if let Ok(v) = err_pipe.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_error_log", (buffer[0..v]).to_vec());
-                            if let Err(_) = result {
-                                break;
-                            }
+                            if let Err(_) = result {}
                         }
-                    } else {
-                        break;
                     }
 
                     // stop if a signal from main thread has been received
