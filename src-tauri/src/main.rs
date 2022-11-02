@@ -25,6 +25,7 @@ fn system_tray_event_handler(app: &AppHandle, event: SystemTrayEvent) {
         SystemTrayEvent::MenuItemClick { tray_id: _, id, .. } => match id.as_str() {
             "show" => {
                 window.show().unwrap();
+                window.set_focus().unwrap();
             }
             "quit" => {
                 stop_v2ray(app.state());
