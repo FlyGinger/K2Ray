@@ -51,8 +51,8 @@ function updateLogSize(value: number | null) {
           <template #header-extra>
             <n-select v-model:value="currentPage" :options="logType" :consistent-menu-width="false"></n-select>
           </template>
-          <n-log v-if="currentPage === 'access'" :lines="store.v2rayAccessLog" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />
-          <n-log v-else :lines="store.v2rayErrorLog" :rows=20 style="background-color: #f6f6f6; padding: 10px;" />    
+          <n-log v-if="currentPage === 'access'" :lines="store.v2rayAccessLog" :rows=12 style="background-color: #f6f6f6; padding: 10px;" />
+          <n-log v-else :lines="store.v2rayErrorLog" :rows=12 style="background-color: #f6f6f6; padding: 10px;" />    
         </n-card>
       </Transition>
 

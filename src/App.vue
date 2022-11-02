@@ -14,8 +14,8 @@ export default {
       // { title: 'DNS', path: '/dns' },
       { title: '路由', path: '/route' },
       { title: '入站', path: '/inbound' },
-      { title: '出站', path: '/outbound' },
-      { title: '服务', path: '/service' },
+      // { title: '出站', path: '/outbound' },
+      // { title: '服务', path: '/service' },
       { title: '关于', path: '/about' },
     ]
   })
