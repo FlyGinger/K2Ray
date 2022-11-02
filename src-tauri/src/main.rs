@@ -27,6 +27,7 @@ fn system_tray_event_handler(app: &AppHandle, event: SystemTrayEvent) {
                 window.show().unwrap();
             }
             "quit" => {
+                stop_v2ray(app.state());
                 app.exit(0);
             }
             _ => {}
