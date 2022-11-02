@@ -33,6 +33,7 @@ export const useStore = defineStore('main', {
     // server
     currentServerGroupIndex: 0, // runtime
     currentServer: {
+      valid: false,
       serverGroupIndex: 0,
       serverIndex: 0,
       name: '',
@@ -44,6 +45,7 @@ export const useStore = defineStore('main', {
     serverGroups: [] as ServerGroup[],
 
     // log
+    v2rayLogLevel: 'Warning',
     v2rayLogSize: 200,
     v2rayAccessLog: [] as string[], // runtime
     v2rayAccessBuffer: [] as number[], // runtime
@@ -84,6 +86,7 @@ export const useStore = defineStore('main', {
     },
 
     async setCurrentServer(serverGroupIndex: number, serverIndex: number, server: Server) {
+      this.currentServer.valid = true
       this.currentServer.serverGroupIndex = serverGroupIndex
       this.currentServer.serverIndex = serverIndex
       this.currentServer.name = server.name
@@ -97,6 +100,7 @@ export const useStore = defineStore('main', {
     },
 
     async clearCurrentServer() {
+      this.currentServer.valid = false
       this.currentServer.serverGroupIndex = 0
       this.currentServer.serverIndex = 0
       this.currentServer.name = ''
@@ -109,14 +113,14 @@ export const useStore = defineStore('main', {
       await persist.save()
     },
 
-    async update(obj: object) {
+    async update(obj: object, restart: boolean) {
       this.$patch(obj)
       Object.entries(obj).forEach(async ([k, v]) => {
         await persist.set(k, v)
       })
       await persist.save()
 
-      if (this.v2rayOn) {
+      if (restart && this.v2rayOn) {
         restartV2Ray(this.v2rayFolderLocation)
       }
     },
@@ -129,7 +133,7 @@ export const useStore = defineStore('main', {
 
     async removeServerGroup() {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
-        this.clearCurrentServer()
+        await this.clearCurrentServer()
         stopV2Ray()
       } else if (this.currentServer.serverGroupIndex > this.currentServerGroupIndex) {
         this.currentServer.serverGroupIndex--
@@ -155,7 +159,7 @@ export const useStore = defineStore('main', {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
         const index = obj.servers.findIndex((v) => v.name === this.currentServer.name)
         if (index < 0) {
-          this.clearCurrentServer()
+          await this.clearCurrentServer()
           stopV2Ray()
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, obj.servers[index])
@@ -172,7 +176,7 @@ export const useStore = defineStore('main', {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
         const index = servers.findIndex((v) => v.name === this.currentServer.name)
         if (index < 0) {
-          this.clearCurrentServer()
+          await this.clearCurrentServer()
           stopV2Ray()
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, servers[index])
@@ -190,7 +194,7 @@ export const useStore = defineStore('main', {
     async removeSingleServer(index: number) {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
         if (this.currentServer.serverIndex === index) {
-          this.clearCurrentServer()
+          await this.clearCurrentServer()
           stopV2Ray()
         } else if (this.currentServer.serverIndex > index) {
           this.currentServer.serverIndex--
@@ -208,13 +212,13 @@ export const useStore = defineStore('main', {
       await persist.save()
 
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex && this.currentServer.serverIndex === index) {
-        this.setCurrentServer(this.currentServerGroupIndex, index, obj)
+        await this.setCurrentServer(this.currentServerGroupIndex, index, obj)
         restartV2Ray(this.v2rayFolderLocation)
       }
     },
 
     async useSingleServer(index: number) {
-      this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
+      await this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
       restartV2Ray(this.v2rayFolderLocation)
     },
 

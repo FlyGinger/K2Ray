@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { FormInst, NButton, NCard, NForm, NFormItem, NInput, NInputNumber, NLayout, NLayoutContent, NSpace, NTreeSelect, useDialog, useMessage } from 'naive-ui'
+import { FormInst, NButton, NCard, NForm, NFormItem, NInput, NInputNumber, NLayout, NLayoutContent, NSelect, NSpace, useDialog, useMessage } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { useStore } from '../store/index'
 import router from '../router/index'
@@ -21,9 +21,9 @@ const modifyMode = router.currentRoute.value.query && router.currentRoute.value.
 // @ts-ignore
 const modifyIndex = (!modifyMode) ? -1 : Number.parseInt(router.currentRoute.value.query.modifyIndex, 10)
 const protocolOptions = [
-  { label: 'Shadowsocks', key: 'shadowsocks' },
-  { label: 'Trojan', key: 'trojan' },
-  { label: 'VMess', key: 'vmess' }
+  { label: 'Shadowsocks', value: 'shadowsocks' },
+  { label: 'Trojan', value: 'trojan' },
+  { label: 'VMess', value: 'vmess' }
 ]
 
 onMounted(() => {
@@ -105,7 +105,7 @@ function cancel() {
               placeholder="密码" />
           </n-form-item>
           <n-form-item label="协议" path="protocol">
-            <n-tree-select v-model:value="singleServer.protocol" :options="protocolOptions"></n-tree-select>
+            <n-select v-model:value="singleServer.protocol" :options="protocolOptions"></n-select>
           </n-form-item>
         </n-form>
         <template #action>

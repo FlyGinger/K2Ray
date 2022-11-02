@@ -1,7 +1,6 @@
 <script setup lang='ts'>
 import { NButton, NCard, NLayout, NLayoutContent, NSpace } from 'naive-ui'
 import { useStore } from '../store/index'
-import { invoke } from '@tauri-apps/api'
 import { open } from '@tauri-apps/api/dialog'
 import { appDir } from '@tauri-apps/api/path'
 
@@ -14,11 +13,7 @@ async function selectV2RayFolder() {
     defaultPath: await appDir()
   })
   if (selected) {
-    store.update({ 'v2rayFolderLocation': selected })
-    if (store.v2rayOn) {
-      await invoke('stop_v2ray')
-      await invoke('run_v2ray', { 'location': store.v2rayFolderLocation })
-    }
+    store.update({ 'v2rayFolderLocation': selected }, true)
   }
 }
 </script>

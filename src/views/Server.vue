@@ -23,17 +23,23 @@ const dropdownSubscribeOptions = [
   { label: '新建服务器', key: 'add_server' },
   { label: '更新订阅', key: 'update_subsrcibe' },
 ]
-const dropdownServerOptions = [
-  { label: '使用此服务器', key: 'use' },
-  { label: '修改', key: 'updae' },
-  { label: '删除', key: 'delete' },
-]
 
 onMounted(() => {
   if (store.currentServerGroupIndex < store.serverGroups.length) {
     currentServerGroupName.value = store.serverGroups[store.currentServerGroupIndex].name
   }
 })
+
+function updateSelected(value: string) {
+  currentServerGroupName.value = value
+  store.currentServerGroupIndex = store.serverGroups.findIndex((v) => v.name === currentServerGroupName.value)
+}
+
+function usingServer(index: number) {
+  return store.currentServer.valid &&
+    store.currentServer.serverGroupIndex === store.currentServerGroupIndex &&
+    store.currentServer.serverIndex === index
+}
 
 function handleServerGroupSelect(key: string) {
   if (key === 'update') {
@@ -78,11 +84,6 @@ function handleServerGroupSelect(key: string) {
 
 function addServerGroup() {
   router.push('/server_group')
-}
-
-function updateSelected(value: string) {
-  currentServerGroupName.value = value
-  store.currentServerGroupIndex = store.serverGroups.findIndex((v) => v.name === currentServerGroupName.value)
 }
 
 async function useServer(index: number) {
@@ -133,7 +134,8 @@ function removeServer(index: number) {
                 </template>
                 <template #action>
                   <v-space>
-                    <n-button quaternary @click="useServer(index)">使用</n-button>
+                    <n-button v-if="usingServer(index)" quaternary disabled>使用中</n-button>
+                    <n-button v-else quaternary @click="useServer(index)">使用</n-button>
                     <n-button quaternary @click="updateServer(index)">修改</n-button>
                     <n-button quaternary @click="removeServer(index)">删除</n-button>
                   </v-space>

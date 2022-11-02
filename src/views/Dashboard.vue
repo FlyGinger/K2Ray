@@ -110,7 +110,8 @@ async function clearSystemProxy() {
           <n-badge v-if="store.v2rayOn" type="success" value="ON" />
           <n-badge v-else type="error" value="OFF" />
         </template>
-        <p>正在使用：{{ store.currentServer.name }}</p>
+        <p v-if="store.currentServer.valid">正在使用：{{ store.currentServer.name }}</p>
+        <p v-else>未选择服务器</p>
         <p>HTTP 端口：{{ store.httpPort }}</p>
         <p>SOCKS 端口：{{ store.socksPort }}</p>
         <template #action>
