@@ -1,22 +1,6 @@
 <script setup lang='ts'>
 import router from './router/index'
-import {
-  NButton,
-  NConfigProvider,
-  NDialogProvider,
-  NDivider,
-  NGradientText,
-  NGrid,
-  NGi,
-  NH1,
-  NImage,
-  NLayout,
-  NLayoutHeader,
-  NLayoutSider,
-  NLayoutContent,
-  NMessageProvider,
-  NText
-} from 'naive-ui'
+import { NButton, NConfigProvider, NDialogProvider, NDivider, NGradientText, NGrid, NGi, NH1, NImage, NLayout, NLayoutHeader, NLayoutSider, NLayoutContent, NMessageProvider, NText } from 'naive-ui'
 </script>
 
 <script lang='ts'>
@@ -27,7 +11,7 @@ export default {
       { title: '控制台', path: '/console' },
       { title: '服务器', path: '/server' },
       { title: '日志', path: '/log' },
-      { title: 'DNS', path: '/dns' },
+      // { title: 'DNS', path: '/dns' },
       { title: '路由', path: '/route' },
       { title: '入站', path: '/inbound' },
       { title: '出站', path: '/outbound' },

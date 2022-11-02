@@ -21,6 +21,11 @@ export interface ServerGroup {
   servers: Server[]
 }
 
+export interface RouteRule {
+  tag: string
+  domain: string
+}
+
 export const useStore = defineStore('main', {
   state: () => ({
     // dashboard
@@ -53,14 +58,18 @@ export const useStore = defineStore('main', {
     v2rayErrorBuffer: [] as number[], // runtime
 
     // dns
+    // todo
+
+    // route
+    domainStrategy: 'AsIs',
+    directChina: true,
+    rules: [] as RouteRule[],
 
     // inbound
     socksPort: 8888,
     httpPort: 8889,
 
     // outbound
-
-    // route
 
     // service
   }),
@@ -245,6 +254,34 @@ export const useStore = defineStore('main', {
 
     async useSingleServer(index: number) {
       await this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
+      restartV2Ray(this.v2rayFolderLocation)
+    },
+
+    async addRouteRule(rule: RouteRule) {
+      this.rules.push(rule)
+      await persist.set('rules', this.rules)
+      await persist.save()
+      restartV2Ray(this.v2rayFolderLocation)
+    },
+
+    async updateRouteRule(index: number, rule: RouteRule) {
+      this.rules[index] = rule
+      await persist.set('rules', this.rules)
+      await persist.save()
+      restartV2Ray(this.v2rayFolderLocation)
+    },
+
+    async removeRouteRule(index: number) {
+      this.rules.splice(index, 1)
+      await persist.set('rules', this.rules)
+      await persist.save()
+      restartV2Ray(this.v2rayFolderLocation)
+    },
+
+    async clearRouteRule() {
+      this.rules = []
+      await persist.set('rules', this.rules)
+      await persist.save()
       restartV2Ray(this.v2rayFolderLocation)
     },
 

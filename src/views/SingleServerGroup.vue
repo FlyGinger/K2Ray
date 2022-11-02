@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { FormInst, FormItemRule, NButton, NCard, NForm, NFormItem, NInput, NLayout, NLayoutContent, NSpace, NSwitch, useMessage } from 'naive-ui'
+import { FormInst, NButton, NCard, NForm, NFormItem, NInput, NLayout, NLayoutContent, NSpace, NSwitch, useMessage } from 'naive-ui'
 import { onMounted, ref } from 'vue'
 import { useStore, Server } from '../store/index'
 import router from '../router/index'
@@ -110,7 +110,7 @@ function cancel() {
     <n-layout-content content-style="margin: 10px;">
 
       <!-- server group -->
-      <n-card title="添加服务器组">
+      <n-card :title="modifyMode ? '修改服务器组' : '添加服务器组'">
         <n-form ref="fromRef" :model="serverGroup" label-placement="left" label-width="auto">
           <n-form-item label="名称" path="name">
             <n-input v-model:value="serverGroup.name" placeholder="名称" />

@@ -111,7 +111,9 @@
         "height": 600,
         "resizable": true,
         "title": "K2Ray",
-        "width": 800
+        "width": 800,
+        "minHeight": 600,
+        "minWidth": 800
       }
     ]
   }

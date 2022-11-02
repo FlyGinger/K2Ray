@@ -16,11 +16,11 @@ function selectServerGroup(value: number) {
 }
 
 function addServerGroup() {
-  router.push('/server_group')
+  router.push('/single_server_group')
 }
 
 function updateServerGroup() {
-  router.push({ path: '/server_group', query: { modifyMode: 'true' } })
+  router.push({ path: '/single_server_group', query: { modifyMode: 'true' } })
 }
 
 function removeServerGroup() {

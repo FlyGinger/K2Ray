@@ -18,8 +18,8 @@ const routes = [
     component: () => import('../views/Server.vue'),
   },
   {
-    path: '/server_group',
-    component: () => import('../views/ServerGroup.vue'),
+    path: '/single_server_group',
+    component: () => import('../views/SingleServerGroup.vue'),
   },
   {
     path: '/single_server',
@@ -36,6 +36,10 @@ const routes = [
   {
     path: '/route',
     component: () => import('../views/Route.vue'),
+  },
+  {
+    path: '/single_route_rule',
+    component: () => import('../views/SingleRouteRule.vue'),
   },
   {
     path: '/inbound',

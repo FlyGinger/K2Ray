@@ -21,9 +21,9 @@ const modifyMode = router.currentRoute.value.query && router.currentRoute.value.
 // @ts-ignore
 const modifyIndex = (!modifyMode) ? -1 : Number.parseInt(router.currentRoute.value.query.modifyIndex, 10)
 const protocolOptions = [
-  { label: 'Shadowsocks', value: 'shadowsocks' },
+//  { label: 'Shadowsocks', value: 'shadowsocks' },
   { label: 'Trojan', value: 'trojan' },
-  { label: 'VMess', value: 'vmess' }
+//  { label: 'VMess', value: 'vmess' }
 ]
 
 onMounted(() => {
@@ -46,7 +46,7 @@ function validator() {
 
 function addSingleServer() {
   if (!validator()) {
-    message.error('每项均必填。')
+    message.error('请填写服务器配置信息。')
     return
   }
   store.addSingleServer(singleServer.value)
@@ -55,7 +55,7 @@ function addSingleServer() {
 
 function updateSingleServer() {
   if (!validator()) {
-    message.error('每项均必填。')
+    message.error('请填写服务器配置信息。')
     return
   }
   if (store.serverGroups[store.currentServerGroupIndex].isSubscribe) {
@@ -86,7 +86,7 @@ function cancel() {
     <n-layout-content content-style="margin: 10px;">
 
       <!-- single server -->
-      <n-card title="添加服务器">
+      <n-card :title="modifyMode ? '修改服务器' : '添加服务器'">
         <n-form ref="fromRef" :model="singleServer" label-placement="left" label-width="auto">
           <n-form-item label="名称" path="name">
             <n-input v-model:value="singleServer.name" placeholder="名称" />
