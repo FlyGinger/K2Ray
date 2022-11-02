@@ -1,7 +1,7 @@
 <script setup lang='ts'>
-import { invoke, os } from '@tauri-apps/api'
+import { os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
-import { NBadge, NButton, NCard, NLayout, NLayoutContent, NSpace } from 'naive-ui'
+import { NBadge, NButton, NCard, NLayout, NLayoutContent, NSpace, NText } from 'naive-ui'
 import { useStore } from '../store/index'
 import { startV2Ray, stopV2Ray, restartV2Ray } from '../utils/v2ray'
 
@@ -110,10 +110,12 @@ async function clearSystemProxy() {
           <n-badge v-if="store.v2rayOn" type="success" value="ON" />
           <n-badge v-else type="error" value="OFF" />
         </template>
-        <p v-if="store.currentServer.valid">正在使用：{{ store.currentServer.name }}</p>
-        <p v-else>未选择服务器</p>
-        <p>HTTP 端口：{{ store.httpPort }}</p>
-        <p>SOCKS 端口：{{ store.socksPort }}</p>
+        <n-space vertical>
+          <n-text v-if="store.currentServer.valid">正在使用：{{ store.currentServer.name }}</n-text>
+          <n-text v-else>未选择服务器</n-text>
+          <n-text>HTTP 端口：{{ store.httpPort }}</n-text>
+          <n-text>SOCKS 端口：{{ store.socksPort }}</n-text>
+        </n-space>
         <template #action>
           <n-space>
             <n-button tertiary @click="startV2Ray(store.v2rayFolderLocation)">开启</n-button>

@@ -27,8 +27,6 @@ const protocolOptions = [
 ]
 
 onMounted(() => {
-  console.log(modifyMode)
-  console.log(modifyIndex)
   if (modifyMode) {
     const server = store.serverGroups[store.currentServerGroupIndex].servers[modifyIndex]
     singleServer.value.name = server.name

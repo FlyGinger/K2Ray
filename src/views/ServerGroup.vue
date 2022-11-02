@@ -50,7 +50,7 @@ async function addServerGroup() {
     fetchServers(serverGroup.value.subscribeURL).then((servers) => {
       loading.value = false
       sg.servers.push(...servers)
-      store.currentServerGroupIndex = store.serverGroups.length
+      store.update({ currentServerGroupIndex: store.serverGroups.length }, false)
       store.addServerGroup(sg)
       router.push('/server')
     }).catch((err) => {
@@ -58,7 +58,7 @@ async function addServerGroup() {
       message.error(err)
     })
   } else {
-    store.currentServerGroupIndex = store.serverGroups.length
+    store.update({ currentServerGroupIndex: store.serverGroups.length }, false)
     store.addServerGroup(sg)
     router.push('/server')
   }

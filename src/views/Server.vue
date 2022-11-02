@@ -1,38 +1,50 @@
 <script setup lang='ts'>
-import { NButton, NCard, NDropdown, NLayout, NLayoutContent, NList, NListItem, NTabs, NTabPane, NText, NThing, useDialog, useMessage } from 'naive-ui'
+import { NBadge, NButton, NCard, NDropdown, NLayout, NLayoutContent, NList, NListItem, NSpace, NText, NThing, useDialog, useMessage } from 'naive-ui'
 import { useStore } from '../store/index'
 import router from '../router/index'
 import { fetchServers } from '../utils/subscribe'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 const store = useStore()
 const dialog = useDialog()
 const message = useMessage()
 
 const loading = ref(false)
-const currentServerGroupName = ref('')
 
-const dropdownNormalOptions = [
-  { label: '修改', key: 'update' },
-  { label: '删除', key: 'delete' },
-  { label: '新建服务器', key: 'add_server' },
-]
-const dropdownSubscribeOptions = [
-  { label: '修改', key: 'update' },
-  { label: '删除', key: 'delete' },
-  { label: '新建服务器', key: 'add_server' },
-  { label: '更新订阅', key: 'update_subsrcibe' },
-]
+function selectServerGroup(value: number) {
+  store.update({ currentServerGroupIndex: value }, false)
+}
 
-onMounted(() => {
-  if (store.currentServerGroupIndex < store.serverGroups.length) {
-    currentServerGroupName.value = store.serverGroups[store.currentServerGroupIndex].name
-  }
-})
+function addServerGroup() {
+  router.push('/server_group')
+}
 
-function updateSelected(value: string) {
-  currentServerGroupName.value = value
-  store.currentServerGroupIndex = store.serverGroups.findIndex((v) => v.name === currentServerGroupName.value)
+function updateServerGroup() {
+  router.push({ path: '/server_group', query: { modifyMode: 'true' } })
+}
+
+function removeServerGroup() {
+  dialog.warning({
+    title: '警告',
+    content: '该操作无法撤销，所有服务器信息将无法找回。',
+    positiveText: '确认删除',
+    negativeText: '取消',
+    onPositiveClick: () => {
+      store.removeServerGroup()
+    },
+    onNegativeClick: () => { }
+  })
+}
+
+function updateSubscribe() {
+  loading.value = true
+  fetchServers(store.serverGroups[store.currentServerGroupIndex].subscribeURL).then((servers) => {
+    loading.value = false
+    store.updateSubscribe(servers)
+  }).catch((err) => {
+    loading.value = false
+    message.error(err)
+  })
 }
 
 function usingServer(index: number) {
@@ -41,53 +53,25 @@ function usingServer(index: number) {
     store.currentServer.serverIndex === index
 }
 
-function handleServerGroupSelect(key: string) {
-  if (key === 'update') {
-    router.push({ path: '/server_group', query: { modifyMode: 'true' } })
-  } else if (key === 'delete') {
+async function useServer(index: number) {
+  store.useSingleServer(index)
+}
+
+function addServer() {
+  if (store.serverGroups[store.currentServerGroupIndex].isSubscribe) {
     dialog.warning({
       title: '警告',
-      content: '该操作无法撤销，所有服务器信息将无法找回。',
-      positiveText: '确认删除',
+      content: '这个服务器组是一个订阅分组，在此处新建的服务器会在更新订阅后消失且无法找回。',
+      positiveText: '确认新建',
       negativeText: '取消',
       onPositiveClick: () => {
-        store.removeServerGroup()
+        router.push('/single_server')
       },
       onNegativeClick: () => { }
     })
-  } else if (key === 'add_server') {
-    if (store.serverGroups[store.currentServerGroupIndex].isSubscribe) {
-      dialog.warning({
-        title: '警告',
-        content: '这个服务器组是一个订阅分组，在此处新建的服务器会在更新订阅后消失且无法找回。',
-        positiveText: '确认新建',
-        negativeText: '取消',
-        onPositiveClick: () => {
-          router.push('/single_server')
-        },
-        onNegativeClick: () => { }
-      })
-    } else {
-      router.push('/single_server')
-    }
-  } else if (key === 'update_subsrcibe') {
-    loading.value = true
-    fetchServers(store.serverGroups[store.currentServerGroupIndex].subscribeURL).then((servers) => {
-      loading.value = false
-      store.updateSubscribe(servers)
-    }).catch((err) => {
-      loading.value = false
-      message.error(err)
-    })
+  } else {
+    router.push('/single_server')
   }
-}
-
-function addServerGroup() {
-  router.push('/server_group')
-}
-
-async function useServer(index: number) {
-  store.useSingleServer(index)
 }
 
 function updateServer(index: number) {
@@ -112,19 +96,52 @@ function removeServer(index: number) {
   <n-layout>
     <n-layout-content content-style="margin: 10px;">
 
-      <!-- servers -->
+      <!-- server groups -->
       <n-card v-if="store.serverGroups.length === 0" title="请添加服务器组和服务器">
         <template #action>
           <n-button tertiary @click="addServerGroup">添加服务器组</n-button>
         </template>
       </n-card>
 
-      <n-tabs v-else type="card" addable @add="addServerGroup" animated v-model:value="currentServerGroupName"
-        @update:value="updateSelected" size="large">
-        <n-tab-pane v-for="group in store.serverGroups" :name="group.name" :tab="group.name">
-          <n-text v-if="group.servers.length === 0" style="padding: 10px;">当前服务器组里没有服务器。</n-text>
-          <n-list v-else hoverable>
-            <n-list-item v-for="(server, index) in group.servers">
+      <n-card v-else :title="store.serverGroups[store.currentServerGroupIndex].name">
+        <template #header-extra>
+          <n-space>
+            <n-button tertiary @click="addServerGroup" style="right: true;">新建</n-button>
+            <n-dropdown trigger="click" :options="store.serverGroupOptions" key-field="index" label-field="name"
+              @select="selectServerGroup">
+              <n-button v-if="store.currentServerGroupIndex < 0" tertiary>选择</n-button>
+              <n-button v-else tertiary>更换</n-button>
+            </n-dropdown>
+          </n-space>
+        </template>
+
+        <n-text v-if="store.currentServerGroupIsSubscribe">
+          此服务器组是一个订阅分组。
+        </n-text>
+
+        <template #action>
+          <n-space>
+            <n-button tertiary @click="updateServerGroup" :disabled="loading">修改</n-button>
+            <n-button tertiary @click="removeServerGroup" :disabled="loading">删除</n-button>
+            <n-button v-if="store.currentServerGroupIsSubscribe" tertiary @click="updateSubscribe" :loading="loading">
+              更新订阅</n-button>
+            <n-button tertiary @click="addServer" :disabled="loading">新建服务器</n-button>
+          </n-space>
+        </template>
+      </n-card>
+
+      <!-- servers -->
+      <n-card v-if="store.currentServerGroupIndex >= 0" title="服务器" style="margin-top: 10px;">
+        <template #header-extra>
+          <n-badge type="info" :value="store.currentServerGroupNumberServer" />
+        </template>
+
+        <div v-if="store.currentServerGroupNumberServer === 0">
+          <n-text>此服务器组中没有服务器。</n-text>
+        </div>
+        <div v-else>
+          <n-list hoverable>
+            <n-list-item v-for="(server, index) in store.serverGroups[store.currentServerGroupIndex].servers">
               <n-thing>
                 <template #header>
                   {{ server.name }}
@@ -133,27 +150,18 @@ function removeServer(index: number) {
                   {{ server.address }}
                 </template>
                 <template #action>
-                  <v-space>
+                  <n-space>
                     <n-button v-if="usingServer(index)" quaternary disabled>使用中</n-button>
                     <n-button v-else quaternary @click="useServer(index)">使用</n-button>
                     <n-button quaternary @click="updateServer(index)">修改</n-button>
                     <n-button quaternary @click="removeServer(index)">删除</n-button>
-                  </v-space>
+                  </n-space>
                 </template>
               </n-thing>
             </n-list-item>
           </n-list>
-        </n-tab-pane>
-        <template #suffix>
-          <n-dropdown v-if="store.serverGroups[store.currentServerGroupIndex].isSubscribe" trigger="click"
-            :options="dropdownSubscribeOptions" @select="handleServerGroupSelect">
-            <n-button quaternary :loading="loading">选项</n-button>
-          </n-dropdown>
-          <n-dropdown v-else trigger="click" :options="dropdownNormalOptions" @select="handleServerGroupSelect">
-            <n-button quaternary>选项</n-button>
-          </n-dropdown>
-        </template>
-      </n-tabs>
+        </div>
+      </n-card>
 
     </n-layout-content>
   </n-layout>

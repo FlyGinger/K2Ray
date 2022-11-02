@@ -31,7 +31,7 @@ export const useStore = defineStore('main', {
     v2rayFolderLocation: '',
 
     // server
-    currentServerGroupIndex: 0, // runtime
+    currentServerGroupIndex: -1,
     currentServer: {
       valid: false,
       serverGroupIndex: 0,
@@ -65,6 +65,28 @@ export const useStore = defineStore('main', {
     // service
   }),
 
+  getters: {
+    serverGroupOptions: (state) => {
+      const result: { index: number, name: string }[] = []
+      state.serverGroups.forEach((v, i) => {
+        result.push({ index: i, name: v.name })
+      })
+      return result
+    },
+
+    currentServerGroupIsSubscribe: (state) => {
+      return state.currentServerGroupIndex >= 0 &&
+        state.serverGroups[state.currentServerGroupIndex].isSubscribe
+    },
+
+    currentServerGroupNumberServer: (state) => {
+      if (state.currentServerGroupIndex < 0) {
+        return 0
+      }
+      return state.serverGroups[state.currentServerGroupIndex].servers.length
+    }
+  },
+
   actions: {
     async initialize() {
       await persist.load()
@@ -73,8 +95,11 @@ export const useStore = defineStore('main', {
       if (entries.length == 0) {
         // first start, create default config
         await persist.set('v2rayFolderLocation', this.v2rayFolderLocation)
+        await persist.set('currentServerGroupIndex', this.currentServerGroupIndex)
         await persist.set('currentServer', this.currentServer)
         await persist.set('serverGroups', this.serverGroups)
+        await persist.set('v2rayLogLevel', this.v2rayLogLevel)
+        await persist.set('v2rayLogSize', this.v2rayLogSize)
         await persist.save()
       } else {
         entries.forEach(([k, v]) => {
@@ -129,6 +154,10 @@ export const useStore = defineStore('main', {
       this.serverGroups.push(obj)
       await persist.set('serverGroups', this.serverGroups)
       await persist.save()
+
+      if (this.serverGroups.length === 1) {
+        this.update({ currentServerGroupIndex: 0 }, true)
+      }
     },
 
     async removeServerGroup() {
@@ -140,11 +169,8 @@ export const useStore = defineStore('main', {
       }
 
       this.serverGroups.splice(this.currentServerGroupIndex, 1)
-
-      if (this.serverGroups.length == 0) {
-        this.currentServerGroupIndex = 0
-      } else if (this.currentServerGroupIndex >= this.serverGroups.length) {
-        this.currentServerGroupIndex = this.serverGroups.length - 1
+      if (this.currentServerGroupIndex >= this.serverGroups.length) {
+        this.update({ currentServerGroupIndex: this.serverGroups.length - 1 }, false)
       }
 
       await persist.set('serverGroups', this.serverGroups)
