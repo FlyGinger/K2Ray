@@ -1,0 +1,121 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "pnpm run build",
+    "beforeDevCommand": "pnpm run dev",
+    "devPath": "http://localhost:5173",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "K2Ray",
+    "version": "0.5.0"
+  },
+  "tauri": {
+    "systemTray": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true
+    },
+    "allowlist": {
+      "dialog": {
+        "all": false,
+        "ask": false,
+        "confirm": false,
+        "message": false,
+        "open": true,
+        "save": false
+      },
+      "http": {
+        "all": false,
+        "request": true,
+        "scope": [
+          "http://**",
+          "https://**"
+        ]
+      },
+      "os": {
+        "all": true
+      },
+      "path": {
+        "all": true
+      },
+      "shell": {
+        "all": false,
+        "execute": true,
+        "open": false,
+        "scope": [
+          {
+            "name": "darwin-ifconfig",
+            "cmd": "ifconfig"
+          },
+          {
+            "name": "darwin-networksetup",
+            "cmd": "networksetup",
+            "args": true
+          },
+          {
+            "name": "darwin-scutil",
+            "cmd": "scutil",
+            "args": true
+          },
+          {
+            "name": "win32-reg",
+            "cmd": "reg",
+            "args": true
+          }
+        ],
+        "sidecar": false
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/128x128@2x.png",
+        "icons/icon.icns",
+        "icons/icon.ico"
+      ],
+      "identifier": "top.zenk.k2ray",
+      "longDescription": "",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": false
+    },
+    "windows": [
+      {
+        "label": "main",
+        "fullscreen": false,
+        "height": 600,
+        "resizable": true,
+        "title": "K2Ray",
+        "width": 800,
+        "minHeight": 600,
+        "minWidth": 800
+      }
+    ]
+  }
+}
