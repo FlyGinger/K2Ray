@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "k2ray",
+    "productName": "K2Ray",
     "version": "0.1.0"
   },
   "tauri": {
@@ -81,7 +81,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "top.zenk.k2ray",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -107,6 +107,7 @@
     },
     "windows": [
       {
+        "label": "main",
         "fullscreen": false,
         "height": 600,
         "resizable": true,

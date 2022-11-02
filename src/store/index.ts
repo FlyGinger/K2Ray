@@ -3,7 +3,6 @@ import { invoke, os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
 import { listen } from '@tauri-apps/api/event'
 import { Store } from 'tauri-plugin-store-api'
-import { stopV2Ray, restartV2Ray } from '../utils/v2ray'
 
 const persist = new Store('config.json')
 
@@ -70,8 +69,10 @@ export const useStore = defineStore('main', {
     httpPort: 8889,
 
     // outbound
+    // todo
 
     // service
+    // todo
   }),
 
   getters: {
@@ -109,6 +110,11 @@ export const useStore = defineStore('main', {
         await persist.set('serverGroups', this.serverGroups)
         await persist.set('v2rayLogLevel', this.v2rayLogLevel)
         await persist.set('v2rayLogSize', this.v2rayLogSize)
+        await persist.set('domainStrategy', this.domainStrategy)
+        await persist.set('directChina', this.directChina)
+        await persist.set('rules', this.rules)
+        await persist.set('socksPort', this.socksPort)
+        await persist.set('httpPort', this.httpPort)
         await persist.save()
       } else {
         entries.forEach(([k, v]) => {
@@ -154,8 +160,8 @@ export const useStore = defineStore('main', {
       })
       await persist.save()
 
-      if (restart && this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation)
+      if (restart && this.v2rayOn && this.currentServer.valid) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
       }
     },
 
@@ -172,7 +178,9 @@ export const useStore = defineStore('main', {
     async removeServerGroup() {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
         await this.clearCurrentServer()
-        stopV2Ray()
+        if (this.v2rayOn) {
+          stopV2Ray()
+        }
       } else if (this.currentServer.serverGroupIndex > this.currentServerGroupIndex) {
         this.currentServer.serverGroupIndex--
       }
@@ -195,10 +203,14 @@ export const useStore = defineStore('main', {
         const index = obj.servers.findIndex((v) => v.name === this.currentServer.name)
         if (index < 0) {
           await this.clearCurrentServer()
-          stopV2Ray()
+          if (this.v2rayOn) {
+            stopV2Ray()
+          }
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, obj.servers[index])
-          restartV2Ray(this.v2rayFolderLocation)
+          if (this.v2rayOn) {
+            restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+          }
         }
       }
     },
@@ -212,10 +224,14 @@ export const useStore = defineStore('main', {
         const index = servers.findIndex((v) => v.name === this.currentServer.name)
         if (index < 0) {
           await this.clearCurrentServer()
-          stopV2Ray()
+          if (this.v2rayOn) {
+            stopV2Ray()
+          }
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, servers[index])
-          restartV2Ray(this.v2rayFolderLocation)
+          if (this.v2rayOn) {
+            restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+          }
         }
       }
     },
@@ -230,7 +246,9 @@ export const useStore = defineStore('main', {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex) {
         if (this.currentServer.serverIndex === index) {
           await this.clearCurrentServer()
-          stopV2Ray()
+          if (this.v2rayOn) {
+            stopV2Ray()
+          }
         } else if (this.currentServer.serverIndex > index) {
           this.currentServer.serverIndex--
         }
@@ -248,41 +266,53 @@ export const useStore = defineStore('main', {
 
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex && this.currentServer.serverIndex === index) {
         await this.setCurrentServer(this.currentServerGroupIndex, index, obj)
-        restartV2Ray(this.v2rayFolderLocation)
+        if (this.v2rayOn) {
+          restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        }
       }
     },
 
     async useSingleServer(index: number) {
       await this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
-      restartV2Ray(this.v2rayFolderLocation)
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+      }
     },
 
     async addRouteRule(rule: RouteRule) {
       this.rules.push(rule)
       await persist.set('rules', this.rules)
       await persist.save()
-      restartV2Ray(this.v2rayFolderLocation)
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+      }
     },
 
     async updateRouteRule(index: number, rule: RouteRule) {
       this.rules[index] = rule
       await persist.set('rules', this.rules)
       await persist.save()
-      restartV2Ray(this.v2rayFolderLocation)
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+      }
     },
 
     async removeRouteRule(index: number) {
       this.rules.splice(index, 1)
       await persist.set('rules', this.rules)
       await persist.save()
-      restartV2Ray(this.v2rayFolderLocation)
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+      }
     },
 
     async clearRouteRule() {
       this.rules = []
       await persist.set('rules', this.rules)
       await persist.save()
-      restartV2Ray(this.v2rayFolderLocation)
+      if (this.v2rayOn) {
+        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+      }
     },
 
     pushAccessLog(log: number[]) {
@@ -382,12 +412,86 @@ setInterval(async () => {
 
 /* -------- log -------- */
 
-await listen<string>('send_access_log', (event) => {
+listen<string>('send_access_log', (event) => {
   // @ts-ignore: why payload is inferred to be string?
   store.pushAccessLog(event.payload)
 })
 
-await listen<string>('send_error_log', (event) => {
+listen<string>('send_error_log', (event) => {
   // @ts-ignore: why payload is inferred to be string?
   store.pushErrorLog(event.payload)
 })
+
+/* -------- generate v2ray config file -------- */
+
+export function generateV2RayConfig(): string {
+  const newConfig = {
+    log: {
+      access: { Type: 'Console', Level: store.v2rayLogLevel },
+      error: { Type: 'Console', Level: store.v2rayLogLevel }
+    },
+    router: {
+      domainStrategy: store.domainStrategy,
+      rules: store.directChina ? [
+        { tag: 'direct', geoDomain: { code: 'cn' } },
+        { tag: 'direct', geoip: { code: 'cn' } }
+      ] : []
+    },
+    inbounds: [
+      {
+        protocol: 'socks',
+        settings: {
+          udp: true,
+          auth: 'noauth',
+        },
+        port: store.socksPort,
+        listen: '127.0.0.1',
+      },
+      {
+        protocol: 'http',
+        port: store.httpPort,
+        listen: '127.0.0.1',
+      },
+    ],
+    outbounds: [
+      {
+        protocol: store.currentServer.protocol,
+        settings: {
+          address: store.currentServer.address,
+          port: store.currentServer.port,
+          password: store.currentServer.password
+        },
+        tag: 'proxy',
+        streamSettings: {
+          transport: 'tcp',
+          security: 'tls',
+        }
+      },
+      {
+        protocol: 'freedom',
+        tag: 'direct',
+      },
+      {
+        protocol: 'blackhole',
+        tag: 'block',
+      }
+    ]
+  }
+  store.rules.forEach((v) => {
+    // @ts-ignore
+    newConfig.router.rules.push({ tag: v.tag, domain: v.domain })
+  })
+  return JSON.stringify(newConfig)
+}
+
+export async function startV2Ray(location: string, config: string) {
+  return await invoke('start_v2ray', { location: location, config: config })
+}
+
+export async function stopV2Ray() {
+  return await invoke('stop_v2ray')
+}
+
+export async function restartV2Ray(location: string, config: string) {
+  return await stopV2Ray() && await startV2Ray(location, config)
+}

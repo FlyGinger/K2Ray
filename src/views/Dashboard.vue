@@ -1,11 +1,11 @@
 <script setup lang='ts'>
 import { os } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
-import { NBadge, NButton, NCard, NLayout, NLayoutContent, NSpace, NText } from 'naive-ui'
-import { useStore } from '../store/index'
-import { startV2Ray, stopV2Ray, restartV2Ray } from '../utils/v2ray'
+import { NBadge, NButton, NCard, NLayout, NLayoutContent, NSpace, NText, useMessage } from 'naive-ui'
+import { useStore, generateV2RayConfig, startV2Ray, stopV2Ray, restartV2Ray } from '../store/index'
 
 const store = useStore()
+const message = useMessage()
 
 // -------- system proxy --------
 
@@ -84,6 +84,24 @@ async function clearSystemProxy() {
     await new Command('win32-reg', ['add', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings', '/v', 'ProxyEnable', '/t', 'REG_DWORD', '/d', '0', '/f']).execute()
   }
 }
+
+async function start() {
+  if (!(await startV2Ray(store.v2rayFolderLocation, generateV2RayConfig()))) {
+    message.error('启动 V2Ray 时发生错误。')
+  }
+}
+
+async function stop() {
+  if (!(await stopV2Ray())) {
+    message.error('停止 V2Ray 时发生错误。')
+  }
+}
+
+async function restart() {
+  if (!(await restartV2Ray(store.v2rayFolderLocation, generateV2RayConfig()))) {
+    message.error('重启 V2Ray 时发生错误。')
+  }
+}
 </script>
 
 <template>
@@ -118,9 +136,9 @@ async function clearSystemProxy() {
         </n-space>
         <template #action>
           <n-space>
-            <n-button tertiary @click="startV2Ray(store.v2rayFolderLocation)">开启</n-button>
-            <n-button tertiary @click="restartV2Ray(store.v2rayFolderLocation)">重启</n-button>
-            <n-button tertiary @click="stopV2Ray">关闭</n-button>
+            <n-button tertiary @click="start" :disabled="!store.currentServer.valid">开启</n-button>
+            <n-button tertiary @click="restart" :disabled="!store.currentServer.valid">重启</n-button>
+            <n-button tertiary @click="stop">关闭</n-button>
           </n-space>
         </template>
       </n-card>

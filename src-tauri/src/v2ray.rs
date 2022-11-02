@@ -1,5 +1,6 @@
 use std::{
-    io::{BufReader, Read},
+    fs::File,
+    io::{BufReader, Read, Write},
     path::Path,
     process::{Child, Command, Stdio},
     sync::{
@@ -41,9 +42,25 @@ pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
 }
 
 #[tauri::command]
-pub fn start_v2ray(state: tauri::State<V2RayManager>, window: Window, location: String) -> bool {
+pub fn start_v2ray(
+    state: tauri::State<V2RayManager>,
+    window: Window,
+    location: String,
+    config: String,
+) -> bool {
     let v2ray_folder_location = Path::new(&location);
+    let v2ray_config_location = v2ray_folder_location.join("config.json");
     let v2ray_location = v2ray_folder_location.join("v2ray");
+
+    // create config.json for v2ray
+    let config_file = File::create(v2ray_config_location);
+    if let Err(_) = config_file {
+        return false;
+    } else {
+        if let Err(_) = config_file.unwrap().write_all(config.as_bytes()) {
+            return false;
+        }
+    }
 
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
 

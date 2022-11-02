@@ -1,7 +1,7 @@
 <script setup lang='ts'>
 import { ref } from 'vue';
 import { useStore } from '../store'
-import { NCard, NForm, NFormItem, NInputNumber, NLayout, NLayoutContent, NLog, NSelect, NTabs, NTabPane } from 'naive-ui'
+import { NCard, NForm, NFormItem, NInputNumber, NLayout, NLayoutContent, NLog, NSelect } from 'naive-ui'
 
 const logLevelOptions = [
   'Debug',
