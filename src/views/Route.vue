@@ -24,6 +24,10 @@ function updateDirectChina(value: boolean) {
   store.update({ directChina: value }, true)
 }
 
+function updateDirectPrivate(value: boolean) {
+  store.update({ directPrivate: value }, true)
+}
+
 function addRule() {
   router.push('/single_route_rule')
 }
@@ -47,13 +51,16 @@ function clearRule() {
 
       <!-- route -->
       <n-card title="路由">
-        <n-form label-placement="left" label-width="auto">
+        <n-form label-placement="left" label-align="right" label-width="200">
           <n-form-item label="匹配策略">
             <n-select v-model:value="store.domainStrategy" :options="domainStrategyOptions"
               @update:value="updateDomainStrategy"></n-select>
           </n-form-item>
           <n-form-item label="大陆域名与 IP 直接连接">
             <n-switch v-model:value="store.directChina" @update:value="updateDirectChina" />
+          </n-form-item>
+          <n-form-item label="局域网域名与 IP 直接连接">
+            <n-switch v-model:value="store.directPrivate" @update:value="updateDirectPrivate" />
           </n-form-item>
         </n-form>
         <template #action>

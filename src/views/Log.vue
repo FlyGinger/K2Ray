@@ -43,9 +43,13 @@ function updateLogLevel(value: string) {
 function selectLogPage(value: string) {
   currentPage.value = value
   if (value === 'access') {
-    accessLogInstRef.value?.scrollTo({ position: 'bottom', slient: true })
+    nextTick(() => {
+      accessLogInstRef.value?.scrollTo({ position: 'bottom', slient: true })
+    })
   } else {
-    errorLogInstRef.value?.scrollTo({ position: 'bottom', slient: true })
+    nextTick(() => {
+      errorLogInstRef.value?.scrollTo({ position: 'bottom', slient: true })
+    })
   }
 }
 </script>

@@ -57,8 +57,9 @@ export const useStore = defineStore('main', {
     // todo
 
     // route
-    domainStrategy: 'AsIs',
+    domainStrategy: 'IPOnDemand',
     directChina: true,
+    directPrivate: true,
     rules: [] as RouteRule[],
 
     // inbound
@@ -108,6 +109,7 @@ export const useStore = defineStore('main', {
         await persist.set('v2rayLogLevel', this.v2rayLogLevel)
         await persist.set('domainStrategy', this.domainStrategy)
         await persist.set('directChina', this.directChina)
+        await persist.set('directPrivate', this.directPrivate)
         await persist.set('rules', this.rules)
         await persist.set('socksPort', this.socksPort)
         await persist.set('httpPort', this.httpPort)
@@ -412,18 +414,7 @@ export async function generateV2RayConfig(): Promise<string> {
     routing: {
       domainStrategy: store.domainStrategy,
       domainMatcher: 'mph',
-      rules: store.directChina ? [
-        {
-          type: 'field',
-          outboundTag: 'direct',
-          domains: 'geosite:cn'
-        },
-        {
-          type: 'field',
-          outboundTag: 'direct',
-          ip: 'geoip:cn'
-        }
-      ] : []
+      rules: []
     },
     inbounds: [
       {
@@ -467,9 +458,17 @@ export async function generateV2RayConfig(): Promise<string> {
       }
     ]
   }
+  if (store.directChina) {
+    // @ts-ignore
+    newConfig.routing.rules.push({ type: 'field', outboundTag: 'direct', domains: ['geosite:cn', 'geosite:private'] })
+  }
+  if (store.directPrivate) {
+    // @ts-ignore
+    newConfig.routing.rules.push({ type: 'field', outboundTag: 'direct', ip: ['geoip:cn', 'geoip:private'] })
+  }
   store.rules.forEach((v) => {
     // @ts-ignore
-    newConfig.routing.rules.push({ type: 'field', domains: `domain:${v.domain}`, outboundTag: v.tag })
+    newConfig.routing.rules.push({ type: 'field', outboundTag: v.tag, domains: [`domain:${v.domain}`] })
   })
   return JSON.stringify(newConfig)
 }
