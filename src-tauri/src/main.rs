@@ -7,8 +7,8 @@
 use tauri::ActivationPolicy;
 
 use tauri::{
-    AppHandle, CustomMenuItem, GlobalWindowEvent, Manager, SystemTray, SystemTrayEvent,
-    SystemTrayMenu, WindowEvent,
+    AppHandle, CustomMenuItem, GlobalWindowEvent, Manager, PageLoadPayload, SystemTray,
+    SystemTrayEvent, SystemTrayMenu, Window, WindowEvent,
 };
 use tauri_plugin_store;
 
@@ -50,6 +50,10 @@ fn window_event_handler(event: GlobalWindowEvent) {
     }
 }
 
+fn page_load_event_handler(window: Window, _payload: PageLoadPayload) {
+    window.set_focus().unwrap();
+}
+
 fn main() {
     let mut app = tauri::Builder::default()
         .plugin(tauri_plugin_store::PluginBuilder::default().build())
@@ -62,6 +66,7 @@ fn main() {
         .system_tray(system_tray_menu())
         .on_system_tray_event(system_tray_event_handler)
         .on_window_event(window_event_handler)
+        .on_page_load(page_load_event_handler)
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
