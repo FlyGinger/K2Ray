@@ -3,9 +3,12 @@
     windows_subsystem = "windows"
 )]
 
+#[cfg(target_os = "macos")]
+use tauri::ActivationPolicy;
+
 use tauri::{
-    ActivationPolicy, AppHandle, CustomMenuItem, GlobalWindowEvent, Manager, SystemTray,
-    SystemTrayEvent, SystemTrayMenu, WindowEvent,
+    AppHandle, CustomMenuItem, GlobalWindowEvent, Manager, SystemTray, SystemTrayEvent,
+    SystemTrayMenu, WindowEvent,
 };
 use tauri_plugin_store;
 
@@ -62,6 +65,8 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("error while running tauri application");
 
+    #[cfg(target_os = "macos")]
     app.set_activation_policy(ActivationPolicy::Accessory);
+
     app.run(|_app_handle, _evevt| {});
 }

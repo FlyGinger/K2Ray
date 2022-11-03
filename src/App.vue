@@ -44,7 +44,7 @@ const themeOverrides = {
         <n-layout has-sider position="absolute">
 
           <!-- side bar -->
-          <n-layout-sider bordered native-scrollbar width=160>
+          <n-layout-sider bordered width=160>
 
             <!-- header of side bar -->
             <n-layout-header style="padding-top: 10px; padding-bottom: 10px;">
@@ -78,7 +78,7 @@ const themeOverrides = {
           </n-layout-sider>
 
           <!-- body of main window -->
-          <n-layout-content native-scrollbar>
+          <n-layout-content :native-scrollbar="false">
             <router-view />
           </n-layout-content>
 

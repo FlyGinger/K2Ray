@@ -7,7 +7,7 @@ use std::{
         mpsc::{channel, Sender, TryRecvError::Disconnected},
         Mutex,
     },
-    thread,
+    thread, os::windows::process::CommandExt,
 };
 use tauri::Window;
 
@@ -77,9 +77,10 @@ pub fn start_v2ray(
     }
 
     // if there is no process or previous process has exited, launch new one
-    let cmd = Command::new(v2ray_path.to_str().unwrap())
-        .arg("run")
-        .spawn();
+    #[cfg(target_os = "macos")]
+    let cmd = Command::new(v2ray_path.to_str().unwrap()).arg("run").spawn();
+    #[cfg(target_os = "windows")]
+    let cmd = Command::new(v2ray_path.to_str().unwrap()).creation_flags(0x08000000).arg("run").spawn();
     match cmd {
         Ok(v) => {
             // save closer to tauri managed state
