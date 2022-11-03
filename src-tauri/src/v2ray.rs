@@ -1,5 +1,5 @@
 #[cfg(target_os = "windows")]
-use os::windows::process::CommandExt;
+use std::os::windows::process::CommandExt;
 
 use std::{
     fs::File,
