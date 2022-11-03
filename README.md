@@ -41,16 +41,16 @@ sudo xattr -r -d com.apple.quarantine /path/to/K2Ray.app
 
 ## Screenshot
 
-![1](doc/image/1.png)
+![1](doc/1.png)
 
-![2](doc/image/2.png)
+![2](doc/2.png)
 
-![3](doc/image/3.png)
+![3](doc/3.png)
 
-![4](doc/image/4.png)
+![4](doc/4.png)
 
-![5](doc/image/5.png)
+![5](doc/5.png)
 
-![6](doc/image/6.png)
+![6](doc/6.png)
 
-![7](doc/image/7.png)
+![7](doc/7.png)
