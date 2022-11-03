@@ -13,7 +13,7 @@ async function selectV2RayFolder() {
     defaultPath: await appDir()
   })
   if (selected) {
-    store.update({ 'v2rayFolderLocation': selected }, true)
+    store.update({ 'v2rayFolderPath': selected }, true)
   }
 }
 </script>
@@ -24,7 +24,7 @@ async function selectV2RayFolder() {
 
       <!-- v2ray location -->
       <n-card title="V2Ray 位置">
-        当前位置：{{ store.v2rayFolderLocation }}
+        当前位置：{{ store.v2rayFolderPath }}
         <template #action>
           <n-space>
             <n-button tertiary @click="selectV2RayFolder">修改</n-button>

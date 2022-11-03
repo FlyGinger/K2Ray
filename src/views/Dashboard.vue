@@ -86,7 +86,7 @@ async function clearSystemProxy() {
 }
 
 async function start() {
-  if (!(await startV2Ray(store.v2rayFolderLocation, generateV2RayConfig()))) {
+  if (!(await startV2Ray(store.v2rayFolderPath, await generateV2RayConfig()))) {
     message.error('启动 V2Ray 时发生错误。')
   }
 }
@@ -98,7 +98,7 @@ async function stop() {
 }
 
 async function restart() {
-  if (!(await restartV2Ray(store.v2rayFolderLocation, generateV2RayConfig()))) {
+  if (!(await restartV2Ray(store.v2rayFolderPath, await generateV2RayConfig()))) {
     message.error('重启 V2Ray 时发生错误。')
   }
 }

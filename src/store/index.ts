@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { invoke, os } from '@tauri-apps/api'
+import { invoke, os, path } from '@tauri-apps/api'
 import { Command } from '@tauri-apps/api/shell'
 import { listen } from '@tauri-apps/api/event'
 import { Store } from 'tauri-plugin-store-api'
@@ -32,7 +32,7 @@ export const useStore = defineStore('main', {
     v2rayOn: false, // runtime
 
     // console
-    v2rayFolderLocation: '',
+    v2rayFolderPath: '',
 
     // server
     currentServerGroupIndex: -1,
@@ -50,11 +50,8 @@ export const useStore = defineStore('main', {
 
     // log
     v2rayLogLevel: 'Warning',
-    v2rayLogSize: 200,
-    v2rayAccessLog: [] as string[], // runtime
-    v2rayAccessBuffer: [] as number[], // runtime
-    v2rayErrorLog: [] as string[], // runtime
-    v2rayErrorBuffer: [] as number[], // runtime
+    v2rayAccessLog: '', // runtime
+    v2rayErrorLog: '', // runtime
 
     // dns
     // todo
@@ -104,12 +101,11 @@ export const useStore = defineStore('main', {
 
       if (entries.length == 0) {
         // first start, create default config
-        await persist.set('v2rayFolderLocation', this.v2rayFolderLocation)
+        await persist.set('v2rayFolderPath', this.v2rayFolderPath)
         await persist.set('currentServerGroupIndex', this.currentServerGroupIndex)
         await persist.set('currentServer', this.currentServer)
         await persist.set('serverGroups', this.serverGroups)
         await persist.set('v2rayLogLevel', this.v2rayLogLevel)
-        await persist.set('v2rayLogSize', this.v2rayLogSize)
         await persist.set('domainStrategy', this.domainStrategy)
         await persist.set('directChina', this.directChina)
         await persist.set('rules', this.rules)
@@ -161,7 +157,7 @@ export const useStore = defineStore('main', {
       await persist.save()
 
       if (restart && this.v2rayOn && this.currentServer.valid) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
@@ -209,7 +205,7 @@ export const useStore = defineStore('main', {
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, obj.servers[index])
           if (this.v2rayOn) {
-            restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+            restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
           }
         }
       }
@@ -230,7 +226,7 @@ export const useStore = defineStore('main', {
         } else {
           this.setCurrentServer(this.currentServerGroupIndex, index, servers[index])
           if (this.v2rayOn) {
-            restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+            restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
           }
         }
       }
@@ -267,7 +263,7 @@ export const useStore = defineStore('main', {
       if (this.currentServer.serverGroupIndex === this.currentServerGroupIndex && this.currentServer.serverIndex === index) {
         await this.setCurrentServer(this.currentServerGroupIndex, index, obj)
         if (this.v2rayOn) {
-          restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+          restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
         }
       }
     },
@@ -275,7 +271,7 @@ export const useStore = defineStore('main', {
     async useSingleServer(index: number) {
       await this.setCurrentServer(this.currentServerGroupIndex, index, this.serverGroups[this.currentServerGroupIndex].servers[index])
       if (this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
@@ -284,7 +280,7 @@ export const useStore = defineStore('main', {
       await persist.set('rules', this.rules)
       await persist.save()
       if (this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
@@ -293,7 +289,7 @@ export const useStore = defineStore('main', {
       await persist.set('rules', this.rules)
       await persist.save()
       if (this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
@@ -302,7 +298,7 @@ export const useStore = defineStore('main', {
       await persist.set('rules', this.rules)
       await persist.save()
       if (this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
@@ -311,39 +307,21 @@ export const useStore = defineStore('main', {
       await persist.set('rules', this.rules)
       await persist.save()
       if (this.v2rayOn) {
-        restartV2Ray(this.v2rayFolderLocation, generateV2RayConfig())
+        restartV2Ray(this.v2rayFolderPath, await generateV2RayConfig())
       }
     },
 
     pushAccessLog(log: number[]) {
-      this.v2rayAccessBuffer.push(...log)
-      while (true) {
-        let index = this.v2rayAccessBuffer.indexOf('\n'.charCodeAt(0))
-        if (index >= 0) {
-          this.v2rayAccessLog.push(String.fromCharCode(...(this.v2rayAccessBuffer.slice(0, index))))
-          while (this.v2rayAccessLog.length > this.v2rayLogSize) {
-            this.v2rayAccessLog.shift()
-          }
-          this.v2rayAccessBuffer = this.v2rayAccessBuffer.slice(index + 1)
-        } else {
-          break
-        }
+      this.v2rayAccessLog += String.fromCharCode(...log)
+      if (this.v2rayAccessLog.length > 65535) {
+        this.v2rayAccessLog = this.v2rayAccessLog.substring(this.v2rayAccessLog.length / 2)
       }
     },
 
     pushErrorLog(log: number[]) {
-      this.v2rayErrorBuffer.push(...log)
-      while (true) {
-        let index = this.v2rayErrorBuffer.indexOf('\n'.charCodeAt(0))
-        if (index >= 0) {
-          this.v2rayErrorLog.push(String.fromCharCode(...(this.v2rayErrorBuffer.slice(0, index))))
-          while (this.v2rayErrorLog.length > this.v2rayLogSize) {
-            this.v2rayErrorLog.shift()
-          }
-          this.v2rayErrorBuffer = this.v2rayErrorBuffer.slice(index + 1)
-        } else {
-          break
-        }
+      this.v2rayErrorLog += String.fromCharCode(...log)
+      if (this.v2rayErrorLog.length > 65535) {
+        this.v2rayErrorLog = this.v2rayErrorLog.substring(this.v2rayErrorLog.length / 2)
       }
     }
   }
@@ -424,9 +402,11 @@ listen<string>('send_error_log', (event) => {
 
 /* -------- generate v2ray config file -------- */
 
-export function generateV2RayConfig(): string {
+export async function generateV2RayConfig(): Promise<string> {
   const newConfig = {
     log: {
+      access: await path.join(store.v2rayFolderPath, "access.log"),
+      error: await path.join(store.v2rayFolderPath, "error.log"),
       loglevel: store.v2rayLogLevel.toLowerCase()
     },
     routing: {
@@ -494,14 +474,14 @@ export function generateV2RayConfig(): string {
   return JSON.stringify(newConfig)
 }
 
-export async function startV2Ray(location: string, config: string) {
-  return await invoke('start_v2ray', { location: location, config: config })
+export async function startV2Ray(path: string, config: string) {
+  return await invoke('start_v2ray', { path: path, config: config })
 }
 
 export async function stopV2Ray() {
   return await invoke('stop_v2ray')
 }
 
-export async function restartV2Ray(location: string, config: string) {
-  return await stopV2Ray() && await startV2Ray(location, config)
+export async function restartV2Ray(path: string, config: string) {
+  return await stopV2Ray() && await startV2Ray(path, config)
 }

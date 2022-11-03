@@ -2,7 +2,7 @@ use std::{
     fs::File,
     io::{BufReader, Read, Write},
     path::Path,
-    process::{Child, Command, Stdio},
+    process::{Child, Command},
     sync::{
         mpsc::{channel, Sender, TryRecvError::Disconnected},
         Mutex,
@@ -45,15 +45,17 @@ pub fn is_v2ray_alive(state: tauri::State<V2RayManager>) -> bool {
 pub fn start_v2ray(
     state: tauri::State<V2RayManager>,
     window: Window,
-    location: String,
+    path: String,
     config: String,
 ) -> bool {
-    let v2ray_folder_location = Path::new(&location);
-    let v2ray_config_location = v2ray_folder_location.join("config.json");
-    let v2ray_location = v2ray_folder_location.join("v2ray");
+    let v2ray_folder_path = Path::new(&path);
+    let v2ray_path = v2ray_folder_path.join("v2ray");
+    let v2ray_config_path = v2ray_folder_path.join("config.json");
+    let v2ray_access_log_path = v2ray_folder_path.join("access.log");
+    let v2ray_error_log_path = v2ray_folder_path.join("error.log");
 
     // create config.json for v2ray
-    let config_file = File::create(v2ray_config_location);
+    let config_file = File::create(v2ray_config_path);
     if let Err(_) = config_file {
         return false;
     } else {
@@ -62,6 +64,11 @@ pub fn start_v2ray(
         }
     }
 
+    // remove previous access and error file
+    File::create(&v2ray_access_log_path).expect("failed to create access.log");
+    File::create(&v2ray_error_log_path).expect("failed to create error.log");
+
+    // process in global
     let mut v2ray_process = state.v2ray_handle.lock().unwrap();
 
     // if process does exist, check whether it has exited
@@ -70,29 +77,27 @@ pub fn start_v2ray(
     }
 
     // if there is no process or previous process has exited, launch new one
-    let cmd = Command::new(v2ray_location.to_str().unwrap())
+    let cmd = Command::new(v2ray_path.to_str().unwrap())
         .arg("run")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
         .spawn();
     match cmd {
-        Ok(mut v) => {
-            // fetch stdout and stderr
-            let out_pipe = v.stdout.take().unwrap();
-            let err_pipe = v.stderr.take().unwrap();
-            let mut out_pipe = BufReader::new(out_pipe);
-            let mut err_pipe = BufReader::new(err_pipe);
-
+        Ok(v) => {
             // save closer to tauri managed state
             let (sender, receiver) = channel::<bool>();
             state.log_emitter_closer.lock().unwrap().replace(sender);
 
             // create new thread to emit V2Ray log to frontend
             thread::spawn(move || {
+                // read access and error file
+                let access_file = File::open(v2ray_access_log_path);
+                let error_file = File::open(v2ray_error_log_path);
+                let mut access_reader = BufReader::new(access_file.unwrap());
+                let mut error_reader = BufReader::new(error_file.unwrap());
+
                 let mut buffer = [0; 256];
                 loop {
                     // access log in stdout
-                    if let Ok(v) = out_pipe.read(&mut buffer) {
+                    if let Ok(v) = access_reader.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_access_log", (buffer[0..v]).to_vec());
                             if let Err(_) = result {}
@@ -100,7 +105,7 @@ pub fn start_v2ray(
                     }
 
                     // error log in stderr
-                    if let Ok(v) = err_pipe.read(&mut buffer) {
+                    if let Ok(v) = error_reader.read(&mut buffer) {
                         if v > 0 {
                             let result = window.emit("send_error_log", (buffer[0..v]).to_vec());
                             if let Err(_) = result {}
