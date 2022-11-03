@@ -57,7 +57,7 @@ export const useStore = defineStore('main', {
     // todo
 
     // route
-    domainStrategy: 'IPOnDemand',
+    domainStrategy: 'AsIs',
     directChina: true,
     directPrivate: true,
     rules: [] as RouteRule[],
