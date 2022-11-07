@@ -14,16 +14,17 @@ const singleServer = ref({
   address: '',
   port: 0,
   password: '',
-  protocol: ''
+  protocol: '',
+  latency: 0
 })
 
 const modifyMode = router.currentRoute.value.query && router.currentRoute.value.query.modifyMode
 // @ts-ignore
 const modifyIndex = (!modifyMode) ? -1 : Number.parseInt(router.currentRoute.value.query.modifyIndex, 10)
 const protocolOptions = [
-//  { label: 'Shadowsocks', value: 'shadowsocks' },
+  //  { label: 'Shadowsocks', value: 'shadowsocks' },
   { label: 'Trojan', value: 'trojan' },
-//  { label: 'VMess', value: 'vmess' }
+  //  { label: 'VMess', value: 'vmess' }
 ]
 
 onMounted(() => {

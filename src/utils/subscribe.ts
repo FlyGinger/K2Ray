@@ -18,7 +18,8 @@ export function fetchServers(url: string): Promise<Server[]> {
             address: '',
             port: 0,
             password: '',
-            protocol: ''
+            protocol: '',
+            latency: 0
           }
 
           line = line.trim()

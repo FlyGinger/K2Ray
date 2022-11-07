@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { NBadge, NButton, NCard, NDropdown, NLayout, NLayoutContent, NList, NListItem, NSpace, NText, NThing, useDialog, useMessage } from 'naive-ui'
-import { useStore } from '../store/index'
+import { useStore, checkServerDelayByPing } from '../store/index'
 import router from '../router/index'
 import { fetchServers } from '../utils/subscribe'
 import { ref } from 'vue'
@@ -9,7 +9,8 @@ const store = useStore()
 const dialog = useDialog()
 const message = useMessage()
 
-const loading = ref(false)
+const loadingSubscribe = ref(false)
+const loadingServerDelay = ref(false)
 
 function selectServerGroup(value: number) {
   store.update({ currentServerGroupIndex: value }, false)
@@ -37,13 +38,13 @@ function removeServerGroup() {
 }
 
 function updateSubscribe() {
-  loading.value = true
+  loadingSubscribe.value = true
   fetchServers(store.serverGroups[store.currentServerGroupIndex].subscribeURL).then((servers) => {
-    loading.value = false
     store.updateSubscribe(servers)
   }).catch((err) => {
-    loading.value = false
     message.error(err)
+  }).finally(() => {
+    loadingSubscribe.value = false
   })
 }
 
@@ -90,6 +91,12 @@ function removeServer(index: number) {
     onNegativeClick: () => { }
   })
 }
+
+async function checkServerDelay() {
+  loadingServerDelay.value = true
+  await checkServerDelayByPing()
+  loadingServerDelay.value = false
+}
 </script>
 
 <template>
@@ -106,10 +113,12 @@ function removeServer(index: number) {
       <n-card v-else :title="store.serverGroups[store.currentServerGroupIndex].name">
         <template #header-extra>
           <n-space>
-            <n-button tertiary @click="addServerGroup" style="right: true;">新建</n-button>
+            <n-button tertiary @click="addServerGroup" style="right: true;"
+              :disabled="loadingSubscribe || loadingServerDelay">新建</n-button>
             <n-dropdown trigger="click" :options="store.serverGroupOptions" key-field="index" label-field="name"
               @select="selectServerGroup">
-              <n-button v-if="store.currentServerGroupIndex < 0" tertiary>选择</n-button>
+              <n-button v-if="store.currentServerGroupIndex < 0" tertiary
+                :disabled="loadingSubscribe || loadingServerDelay">选择</n-button>
               <n-button v-else tertiary>更换</n-button>
             </n-dropdown>
           </n-space>
@@ -121,11 +130,16 @@ function removeServer(index: number) {
 
         <template #action>
           <n-space>
-            <n-button tertiary @click="updateServerGroup" :disabled="loading">修改</n-button>
-            <n-button tertiary @click="removeServerGroup" :disabled="loading">删除</n-button>
-            <n-button v-if="store.currentServerGroupIsSubscribe" tertiary @click="updateSubscribe" :loading="loading">
+            <n-button tertiary @click="updateServerGroup" :disabled="loadingSubscribe || loadingServerDelay">修改
+            </n-button>
+            <n-button tertiary @click="removeServerGroup" :disabled="loadingSubscribe || loadingServerDelay">删除
+            </n-button>
+            <n-button tertiary @click="checkServerDelay" :disabled="loadingSubscribe" :loading="loadingServerDelay">测试延迟
+            </n-button>
+            <n-button v-if="store.currentServerGroupIsSubscribe" tertiary @click="updateSubscribe"
+              :disabled="loadingServerDelay" :loading="loadingSubscribe">
               更新订阅</n-button>
-            <n-button tertiary @click="addServer" :disabled="loading">新建服务器</n-button>
+            <n-button tertiary @click="addServer" :disabled="loadingSubscribe || loadingServerDelay">新建服务器</n-button>
           </n-space>
         </template>
       </n-card>
@@ -145,6 +159,11 @@ function removeServer(index: number) {
               <n-thing>
                 <template #header>
                   {{ server.name }}
+                </template>
+                <template v-if="server.latency != 0" #header-extra>
+                  <n-badge v-if="server.latency < 0" type="error" value="超时" />
+                  <n-badge v-else-if="server.latency < 100" type="success" :value="`${server.latency}ms`" />
+                  <n-badge v-else type="warning" :value="`${server.latency}ms`" />
                 </template>
                 <template #description>
                   {{ server.address }}

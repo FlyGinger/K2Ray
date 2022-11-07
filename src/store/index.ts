@@ -12,6 +12,7 @@ export interface Server {
   port: number
   password: string
   protocol: string
+  latency: number
 }
 export interface ServerGroup {
   name: string
@@ -389,6 +390,27 @@ setInterval(async () => {
   const result = await invoke('is_v2ray_alive')
   store.v2rayOn = !!result
 }, 1000)
+
+/* -------- server -------- */
+
+export async function checkServerDelayByPing() {
+  let platform = await os.platform()
+  if (platform === 'darwin') {
+    await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server) => {
+      const output = (await new Command('ping', [server.address, '-c', '4']).execute()).stdout.trim()
+      const index = output.lastIndexOf('\n')
+      const lastLine = output.substring(index + 1)
+      if (lastLine.startsWith('round-trip')) {
+        const piece = lastLine.split('/')
+        const latency = Number.parseFloat(piece[4])
+        server.latency = Math.round(latency)
+      } else {
+        server.latency = -1
+      }
+    }))
+    await store.updateServerGroup(store.serverGroups[store.currentServerGroupIndex])
+  }
+}
 
 /* -------- log -------- */
 

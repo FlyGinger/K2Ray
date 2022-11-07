@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "K2Ray",
-    "version": "0.5.2"
+    "version": "0.5.3"
   },
   "tauri": {
     "systemTray": {
@@ -43,6 +43,11 @@
         "execute": true,
         "open": false,
         "scope": [
+          {
+            "name": "ping",
+            "cmd": "ping",
+            "args": true
+          },
           {
             "name": "darwin-ifconfig",
             "cmd": "ifconfig"
