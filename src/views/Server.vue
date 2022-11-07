@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import { NBadge, NButton, NCard, NDropdown, NLayout, NLayoutContent, NList, NListItem, NSpace, NText, NThing, useDialog, useMessage } from 'naive-ui'
-import { useStore, checkServerDelayByPing } from '../store/index'
+import { useStore, checkServerLatencyByPing } from '../store/index'
 import router from '../router/index'
 import { fetchServers } from '../utils/subscribe'
 import { ref } from 'vue'
@@ -92,9 +92,9 @@ function removeServer(index: number) {
   })
 }
 
-async function checkServerDelay() {
+async function checkServerLatency() {
   loadingServerDelay.value = true
-  await checkServerDelayByPing()
+  await checkServerLatencyByPing()
   loadingServerDelay.value = false
 }
 </script>
@@ -119,7 +119,7 @@ async function checkServerDelay() {
               @select="selectServerGroup">
               <n-button v-if="store.currentServerGroupIndex < 0" tertiary
                 :disabled="loadingSubscribe || loadingServerDelay">选择</n-button>
-              <n-button v-else tertiary>更换</n-button>
+              <n-button v-else tertiary :disabled="loadingSubscribe || loadingServerDelay">更换</n-button>
             </n-dropdown>
           </n-space>
         </template>
@@ -134,7 +134,7 @@ async function checkServerDelay() {
             </n-button>
             <n-button tertiary @click="removeServerGroup" :disabled="loadingSubscribe || loadingServerDelay">删除
             </n-button>
-            <n-button tertiary @click="checkServerDelay" :disabled="loadingSubscribe" :loading="loadingServerDelay">测试延迟
+            <n-button tertiary @click="checkServerLatency" :disabled="loadingSubscribe" :loading="loadingServerDelay">测试延迟
             </n-button>
             <n-button v-if="store.currentServerGroupIsSubscribe" tertiary @click="updateSubscribe"
               :disabled="loadingServerDelay" :loading="loadingSubscribe">

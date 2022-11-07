@@ -393,16 +393,27 @@ setInterval(async () => {
 
 /* -------- server -------- */
 
-export async function checkServerDelayByPing() {
+export async function checkServerLatencyByPing() {
   let platform = await os.platform()
   if (platform === 'darwin') {
     await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server) => {
       const output = (await new Command('ping', [server.address, '-c', '4']).execute()).stdout.trim()
-      const index = output.lastIndexOf('\n')
-      const lastLine = output.substring(index + 1)
+      const lastLine = output.substring(output.lastIndexOf('\n') + 1)
       if (lastLine.startsWith('round-trip')) {
-        const piece = lastLine.split('/')
-        const latency = Number.parseFloat(piece[4])
+        const latency = Number.parseFloat(lastLine.split('/')[4])
+        server.latency = Math.round(latency)
+      } else {
+        server.latency = -1
+      }
+    }))
+    await store.updateServerGroup(store.serverGroups[store.currentServerGroupIndex])
+  } else if (platform === 'win32') {
+    await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server) => {
+      const output = (await new Command('ping', server.address, { 'encoding': 'GB2312' }).execute()).stdout.trim()
+      const lastLine = output.substring(output.lastIndexOf('\n') + 1)
+      if (lastLine.endsWith('ms')) {
+        const piece = lastLine.split('ms')[2]
+        const latency = Number.parseFloat(piece.substring(piece.lastIndexOf(' ') + 1))
         server.latency = Math.round(latency)
       } else {
         server.latency = -1
