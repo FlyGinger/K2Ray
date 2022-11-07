@@ -396,19 +396,24 @@ setInterval(async () => {
 export async function checkServerLatencyByPing() {
   let platform = await os.platform()
   if (platform === 'darwin') {
-    await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server) => {
-      const output = (await new Command('ping', [server.address, '-c', '4']).execute()).stdout.trim()
-      const lastLine = output.substring(output.lastIndexOf('\n') + 1)
-      if (lastLine.startsWith('round-trip')) {
-        const latency = Number.parseFloat(lastLine.split('/')[4])
-        server.latency = Math.round(latency)
-      } else {
-        server.latency = -1
-      }
-    }))
-    await store.updateServerGroup(store.serverGroups[store.currentServerGroupIndex])
+    const length = store.serverGroups[store.currentServerGroupIndex].servers.length
+    for (let i = 0; i < length; i += 64) {
+      await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers
+        .slice(i, Math.min(i + 64, length))
+        .map(async (server, index) => {
+          const output = (await new Command('ping', [server.address, '-c', '4']).execute()).stdout.trim()
+          const lastLine = output.substring(output.lastIndexOf('\n') + 1)
+          if (lastLine.startsWith('round-trip')) {
+            const latency = Number.parseFloat(lastLine.split('/')[4])
+            server.latency = Math.round(latency)
+          } else {
+            server.latency = -1
+          }
+          await store.updateSingleServer(i + index, server)
+        }))
+    }
   } else if (platform === 'win32') {
-    await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server) => {
+    await Promise.all(store.serverGroups[store.currentServerGroupIndex].servers.map(async (server, index) => {
       const output = (await new Command('ping', server.address, { 'encoding': 'GB2312' }).execute()).stdout.trim()
       const lastLine = output.substring(output.lastIndexOf('\n') + 1)
       if (lastLine.endsWith('ms')) {
@@ -418,8 +423,8 @@ export async function checkServerLatencyByPing() {
       } else {
         server.latency = -1
       }
+      await store.updateSingleServer(index, server)
     }))
-    await store.updateServerGroup(store.serverGroups[store.currentServerGroupIndex])
   }
 }
 
