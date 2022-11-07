@@ -14,7 +14,7 @@
 
 ## Feature
 
-目前 0.5.0 版本支持 macOS ， 0.4.0 版本支持 macOS 和 Windows 。支持以下功能：
+目前支持 macOS arm 和 Windows x64 。支持以下功能：
 
 - 仪表盘：
   - 管理系统代理的状态；
